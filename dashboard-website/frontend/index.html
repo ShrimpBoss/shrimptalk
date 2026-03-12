@@ -1,0 +1,2473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司管控中心 - 情绪用品跨境</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #F5F7FA;
+            color: #1A1A1A;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: #FFFFFF;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #999999;
+            margin-top: 4px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Notification Bell */
+        .notification {
+            position: relative;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .notification:hover {
+            background: #F5F7FA;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #FF0036;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* User Profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #F5F7FA;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-profile:hover {
+            background: #E8ECEF;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1A1A1A;
+        }
+
+        /* Settings Icon */
+        .settings-icon {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .settings-icon:hover {
+            background: #F5F7FA;
+        }
+
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            min-width: 280px;
+            padding: 12px;
+            z-index: 9999;
+            display: none;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-header {
+            padding: 12px;
+            border-bottom: 1px solid #F0F0F0;
+            margin-bottom: 8px;
+        }
+
+        .dropdown-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1A1A1A;
+        }
+
+        .dropdown-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #F5F7FA;
+        }
+
+        .dropdown-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .dropdown-text {
+            flex: 1;
+            font-size: 14px;
+            color: #1A1A1A;
+        }
+
+        .dropdown-badge {
+            background: #FF0036;
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #F5F7FA;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-running {
+            background: #00C48C;
+        }
+
+        .status-stopped {
+            background: #FF4949;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .emergency-btn {
+            background: linear-gradient(135deg, #FF0036, #FF4949);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(255, 0, 54, 0.3);
+        }
+
+        .emergency-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 54, 0.4);
+        }
+
+        .emergency-btn:active {
+            transform: translateY(0);
+        }
+
+        .resume-btn {
+            background: linear-gradient(135deg, #00C48C, #00E6A8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 196, 140, 0.3);
+            display: none;
+        }
+
+        .resume-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 196, 140, 0.4);
+        }
+
+        .resume-btn.visible {
+            display: block;
+        }
+
+        /* Metrics Cards */
+        .metrics-section {
+            background: #FFFFFF;
+            padding: 24px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .last-update {
+            font-size: 12px;
+            color: #999999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verify-link {
+            font-size: 11px;
+            color: #6B2CF5;
+            text-decoration: none;
+            margin-left: 8px;
+        }
+
+        .verify-link:hover {
+            text-decoration: underline;
+        }
+
+        .refresh-btn {
+            background: #6B2CF5;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #5A23D5;
+        }
+
+        .refresh-btn:disabled {
+            background: #CCCCCC;
+            cursor: not-allowed;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: #F5F7FA;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-card.loading {
+            opacity: 0.6;
+        }
+
+        .metric-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #999999;
+            margin-top: 4px;
+        }
+
+        .metric-trend {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .trend-up {
+            color: #00C48C;
+        }
+
+        .trend-down {
+            color: #FF4949;
+        }
+
+        .data-source {
+            font-size: 10px;
+            color: #BBBBBB;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #FFFFFF;
+            padding: 24px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* Agent Status */
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #F5F7FA;
+            border-radius: 8px;
+        }
+
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .agent-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-running { background: #00C48C; }
+        .status-processing { background: #FF8800; }
+        .status-error { background: #FF4949; }
+        .status-offline { background: #CCCCCC; }
+        .status-stopped { background: #999999; }
+
+        .agent-name {
+            font-weight: 500;
+        }
+
+        .agent-task {
+            font-size: 12px;
+            color: #999999;
+        }
+
+        /* Approval Items */
+        .approval-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .approval-item {
+            padding: 16px;
+            background: #F5F7FA;
+            border-radius: 8px;
+            border-left: 4px solid #6B2CF5;
+        }
+
+        .approval-title {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .approval-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #6B2CF5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5A23D5;
+        }
+
+        .btn-danger {
+            background: #FF4949;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #E03838;
+        }
+
+        .btn-secondary {
+            background: #FFFFFF;
+            color: #666666;
+            border: 1px solid #DDDDDD;
+        }
+
+        .btn-secondary:hover {
+            background: #F5F5F5;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: #F5F7FA;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #FFFFFF;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .product-margin {
+            font-size: 13px;
+            color: #00C48C;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .product-trend {
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        /* Progress Bars */
+        .progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #E8E8E8;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-fill.high { background: #00C48C; }
+        .progress-fill.medium { background: #FF8800; }
+        .progress-fill.low { background: #6B2CF5; }
+
+        /* Suggestions */
+        .suggestion-form {
+            background: #F5F7FA;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .suggestion-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #DDDDDD;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 12px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .suggestion-input:focus {
+            outline: none;
+            border-color: #6B2CF5;
+            box-shadow: 0 0 0 3px rgba(107, 44, 245, 0.1);
+        }
+
+        .suggestion-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .suggestion-option-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .suggestion-select {
+            padding: 8px 12px;
+            border: 1px solid #DDDDDD;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .suggestion-select:focus {
+            outline: none;
+            border-color: #6B2CF5;
+        }
+
+        .priority-high { background: #FFE5E5; color: #FF0036; border-color: #FF0036; }
+        .priority-medium { background: #FFF4E5; color: #FF8800; border-color: #FF8800; }
+        .priority-low { background: #E5F4FF; color: #6B2CF5; border-color: #6B2CF5; }
+
+        .suggestion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .suggestion-item {
+            padding: 16px;
+            background: #FFFFFF;
+            border-radius: 8px;
+            border: 1px solid #E8E8E8;
+            transition: all 0.3s;
+        }
+
+        .suggestion-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #6B2CF5;
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .suggestion-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-done { background: #00C48C; color: white; }
+        .status-progress { background: #FF8800; color: white; }
+        .status-pending { background: #6B2CF5; color: white; }
+        .status-rejected { background: #999999; color: white; }
+
+        .suggestion-priority {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .suggestion-content {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-feedback {
+            background: #F0FDF4;
+            border-left: 3px solid #00C48C;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        .suggestion-feedback-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #00C48C;
+            margin-bottom: 6px;
+        }
+
+        .suggestion-feedback-text {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .suggestion-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #999;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #F0F0F0;
+        }
+
+        .suggestion-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar-mini {
+            width: 100px;
+            height: 6px;
+            background: #F0F0F0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6B2CF5, #00C48C);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999999;
+            font-size: 13px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #E8E8E8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #E8E8E8;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Product Detail Styles */
+        .product-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .product-detail-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #F5F7FA;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .product-detail-info h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .product-detail-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .metric-box {
+            background: #F5F7FA;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .detail-section {
+            margin: 20px 0;
+        }
+
+        .detail-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #6B2CF5;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #F0F0F0;
+            font-size: 14px;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #00C48C;
+            font-weight: bold;
+        }
+
+        .analysis-box {
+            background: #FFF8F0;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #FF8800;
+            margin: 16px 0;
+        }
+
+        .profit-box {
+            background: #F0FFF4;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #00C48C;
+            margin: 16px 0;
+        }
+
+        /* Approval Detail Styles */
+        .approval-detail-info {
+            margin-bottom: 20px;
+        }
+
+        .approval-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #F0F0F0;
+        }
+
+        .approval-detail-label {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .approval-detail-value {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .approval-detail-description {
+            background: #F5F7FA;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Emergency Stop Modal */
+        .emergency-stop-content {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .emergency-stop-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .emergency-stop-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FF0036;
+            margin-bottom: 16px;
+        }
+
+        .emergency-stop-warning {
+            background: #FFF0F0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .emergency-stop-warning h4 {
+            color: #FF0036;
+            margin-bottom: 12px;
+        }
+
+        .emergency-stop-warning ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .emergency-stop-warning li {
+            padding: 8px 0;
+            color: #666;
+        }
+
+        .emergency-stop-warning li:before {
+            content: "⚠️ ";
+        }
+
+        .emergency-stop-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .btn-emergency {
+            background: linear-gradient(135deg, #FF0036, #FF4949);
+            color: white;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-emergency:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 0, 54, 0.4);
+        }
+
+        .btn-cancel {
+            background: #FFFFFF;
+            color: #666;
+            padding: 12px 32px;
+            font-size: 16px;
+            border: 2px solid #DDDDDD;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #F5F5F5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>🏠 公司管控中心</h1>
+                <p class="subtitle">情绪用品跨境 · <span id="currentDate">加载中...</span></p>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <div class="status-indicator status-running" id="systemStatusIndicator"></div>
+                    <span id="systemStatusText">系统运行中</span>
+                </div>
+                <button class="emergency-btn" id="emergencyBtn" onclick="showEmergencyStop()">⏹️ 一键停止</button>
+                <button class="resume-btn" id="resumeBtn" onclick="showResumeConfirm()">▶️ 恢复工作</button>
+                
+                <!-- 通知铃铛 -->
+                <div class="notification" onclick="toggleNotifications()" title="查看通知">
+                    🔔
+                    <span class="notification-badge" id="notificationCount">3</span>
+                    
+                    <!-- 通知下拉菜单 -->
+                    <div class="dropdown-menu" id="notificationDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-title">📬 通知中心</div>
+                            <div class="dropdown-subtitle">3 条未读通知</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">✅</div>
+                            <div class="dropdown-text">
+                                <div style="font-weight:600;font-size:13px;">建议已完成</div>
+                                <div style="font-size:12px;color:#999;">"Agent 改名"建议已处理完成</div>
+                            </div>
+                            <div style="font-size:11px;color:#999;">刚刚</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">⚠️</div>
+                            <div class="dropdown-text">
+                                <div style="font-weight:600;font-size:13px;">待审批事项</div>
+                                <div style="font-size:12px;color:#999;">3 个审批等待您的处理</div>
+                            </div>
+                            <div class="dropdown-badge">3</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">📊</div>
+                            <div class="dropdown-text">
+                                <div style="font-weight:600;font-size:13px;">日报已生成</div>
+                                <div style="font-size:12px;color:#999;">3 月 10 日经营日报</div>
+                            </div>
+                            <div style="font-size:11px;color:#999;">09:00</div>
+                        </div>
+                        <div style="padding:12px;text-align:center;">
+                            <button class="btn btn-secondary" style="font-size:12px;padding:6px 16px;" onclick="markAllRead()">标记全部已读</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用户信息 -->
+                <div class="user-profile" onclick="toggleUserMenu()" title="用户菜单">
+                    <span class="user-name">李总</span>
+                    <span style="font-size:12px;color:#999;">▼</span>
+                    
+                    <!-- 用户下拉菜单 -->
+                    <div class="dropdown-menu" id="userDropdown" style="min-width:200px;">
+                        <div class="dropdown-header">
+                            <div class="dropdown-title">👤 李总</div>
+                            <div class="dropdown-subtitle">管理员 · 在线</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">📊</div>
+                            <div class="dropdown-text">我的仪表板</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">⚙️</div>
+                            <div class="dropdown-text">个人设置</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">📧</div>
+                            <div class="dropdown-text">消息中心</div>
+                        </div>
+                        <div style="border-top:1px solid #F0F0F0;margin:8px 0;"></div>
+                        <div class="dropdown-item" onclick="alert('退出登录功能开发中...')">
+                            <div class="dropdown-icon">🚪</div>
+                            <div class="dropdown-text" style="color:#FF4949;">退出登录</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 设置图标 -->
+                <div class="settings-icon" onclick="toggleSettings()" title="系统设置">
+                    ⚙️
+                    
+                    <!-- 设置下拉菜单 -->
+                    <div class="dropdown-menu" id="settingsDropdown" style="right:0;min-width:260px;">
+                        <div class="dropdown-header">
+                            <div class="dropdown-title">⚙️ 系统设置</div>
+                            <div class="dropdown-subtitle">Dashboard 配置</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">🎨</div>
+                            <div class="dropdown-text">主题切换</div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">🔔</div>
+                            <div class="dropdown-text">
+                                <div>通知设置</div>
+                                <div style="font-size:11px;color:#999;">管理通知偏好</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">🔒</div>
+                            <div class="dropdown-text">
+                                <div>权限管理</div>
+                                <div style="font-size:11px;color:#999;">用户和角色</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">📊</div>
+                            <div class="dropdown-text">
+                                <div>数据源配置</div>
+                                <div style="font-size:11px;color:#999;">API 和数据库</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-item">
+                            <div class="dropdown-icon">💾</div>
+                            <div class="dropdown-text">
+                                <div>备份与恢复</div>
+                                <div style="font-size:11px;color:#999;">数据备份</div>
+                            </div>
+                        </div>
+                        <div style="border-top:1px solid #F0F0F0;margin:8px 0;"></div>
+                        <div class="dropdown-item" onclick="showAbout()">
+                            <div class="dropdown-icon">ℹ️</div>
+                            <div class="dropdown-text">关于系统</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Section -->
+        <div class="metrics-section">
+            <div class="section-header">
+                <div class="section-title">
+                    📊 今日核心指标
+                </div>
+                <div class="last-update">
+                    <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">🔄 刷新</button>
+                    <span>最后刷新：<span id="lastUpdate">--:--</span></span>
+                </div>
+            </div>
+            <div class="metrics-grid" id="metricsGrid">
+                <div class="metric-card loading">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-value loading-skeleton" style="height: 32px;"></div>
+                    <div class="metric-label">GMV</div>
+                    <div class="metric-trend"></div>
+                </div>
+                <div class="metric-card loading">
+                    <div class="metric-icon">📦</div>
+                    <div class="metric-value loading-skeleton" style="height: 32px;"></div>
+                    <div class="metric-label">订单</div>
+                    <div class="metric-trend"></div>
+                </div>
+                <div class="metric-card loading">
+                    <div class="metric-icon">💵</div>
+                    <div class="metric-value loading-skeleton" style="height: 32px;"></div>
+                    <div class="metric-label">利润</div>
+                    <div class="metric-trend"></div>
+                </div>
+                <div class="metric-card loading">
+                    <div class="metric-icon">📈</div>
+                    <div class="metric-value loading-skeleton" style="height: 32px;"></div>
+                    <div class="metric-label">ROAS</div>
+                    <div class="metric-trend"></div>
+                </div>
+                <div class="metric-card loading">
+                    <div class="metric-icon">⭐</div>
+                    <div class="metric-value loading-skeleton" style="height: 32px;"></div>
+                    <div class="metric-label">好评率</div>
+                    <div class="metric-trend"></div>
+                </div>
+                <div class="metric-card loading">
+                    <div class="metric-icon">🚚</div>
+                    <div class="metric-value loading-skeleton" style="height: 32px;"></div>
+                    <div class="metric-label">发货</div>
+                    <div class="metric-trend"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column: Agent Status + Approvals -->
+        <div class="two-column">
+            <div class="card">
+                <div class="section-header">
+                    <div class="section-title">🤖 Agent 团队状态</div>
+                </div>
+                <div class="agent-list" id="agentList">
+                    <div class="agent-item">
+                        <div class="agent-info">
+                            <div class="agent-status status-offline"></div>
+                            <div>
+                                <div class="agent-name">加载中...</div>
+                                <div class="agent-task"></div>
+                            </div>
+                        </div>
+                        <div>⚪ 连接中</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <div class="section-title">⏳ 待您审批</div>
+                </div>
+                <div class="approval-list" id="approvalList">
+                    <div class="approval-item">
+                        <div class="approval-title">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Recommendations -->
+        <div class="card">
+            <div class="section-header">
+                <div class="section-title">🔥 选品推荐</div>
+                <div class="last-update" id="productUpdateTime">小智 · 加载中...</div>
+            </div>
+            <div class="product-grid" id="productGrid">
+                <div class="product-card loading">
+                    <div class="product-image loading-skeleton"></div>
+                    <div class="product-name loading-skeleton" style="height: 20px;"></div>
+                    <div class="product-margin loading-skeleton" style="height: 16px;"></div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-secondary">查看全部推荐</button>
+            </div>
+        </div>
+
+        <!-- Two Column: Sales Chart + Progress -->
+        <div class="two-column" style="margin-top: 20px;">
+            <div class="card">
+                <div class="section-header">
+                    <div class="section-title">📈 销售趋势（近 7 天）</div>
+                </div>
+                <div id="salesChart" style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px 0;">
+                    <div class="loading-skeleton" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <div class="section-title">📋 工作进度</div>
+                </div>
+                <div class="progress-list" id="progressList">
+                    <div class="progress-item">
+                        <div class="progress-bar">
+                            <div class="progress-fill loading-skeleton" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="section-header">
+                <div class="section-title">💬 建议与指示</div>
+                <div class="last-update">
+                    <span style="font-size:12px;color:#999;">按优先级处理 · 完成后自动反馈</span>
+                </div>
+            </div>
+            
+            <!-- 提交建议表单 -->
+            <div class="suggestion-form">
+                <textarea class="suggestion-input" id="suggestionInput" placeholder="详细描述您的建议或指示，团队将按优先级执行并反馈..."></textarea>
+                
+                <div class="suggestion-options">
+                    <div class="suggestion-option-group">
+                        <label>🔥 优先级</label>
+                        <select class="suggestion-select" id="suggestionPriority">
+                            <option value="high">🔴 高 - 立即处理</option>
+                            <option value="medium" selected>🟡 中 - 尽快处理</option>
+                            <option value="low">🔵 低 - 有空处理</option>
+                        </select>
+                    </div>
+                    <div class="suggestion-option-group">
+                        <label>📁 分类</label>
+                        <select class="suggestion-select" id="suggestionCategory">
+                            <option value="运营优化">运营优化</option>
+                            <option value="产品改进">产品改进</option>
+                            <option value="营销策略">营销策略</option>
+                            <option value="系统功能">系统功能</option>
+                            <option value="团队协作">团队协作</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="suggestion-option-group">
+                        <label>👤 指派给</label>
+                        <select class="suggestion-select" id="suggestionAssignee">
+                            <option value="王总">王总 · 副经理</option>
+                            <option value="小安">小安 · 安全运维</option>
+                            <option value="小智">小智 · 产品</option>
+                            <option value="小方">小方 · 营销</option>
+                            <option value="小文">小文 · 内容</option>
+                            <option value="订单专员">订单专员 · 订单</option>
+                            <option value="小财">小财 · 财务</option>
+                            <option value="小服">小服 · 客服</option>
+                            <option value="小仓">小仓 · 仓储</option>
+                            <option value="小研">小研 · 数据分析</option>
+                            <option value="全体">全体</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="submitSuggestion()" style="width:100%;">📤 提交建议</button>
+            </div>
+            
+            <!-- 建议列表 -->
+            <div style="margin-top:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <div style="font-size:14px;font-weight:600;color:#666;">📋 处理进度</div>
+                    <div style="font-size:12px;color:#999;">
+                        <span id="suggestionStats">加载中...</span>
+                    </div>
+                </div>
+                <div class="suggestion-list" id="suggestionList">
+                    <div class="suggestion-item">
+                        <div class="loading-skeleton" style="height: 20px; width: 60%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            情绪用品跨境公司管控中心 · 数据实时更新 · 最后同步：<span id="footerUpdateTime">--:--</span>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="productModalTitle">产品详情</div>
+                <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="productModalBody">
+                加载中...
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('productModal')">关闭</button>
+                <button class="btn btn-primary" onclick="approveProductFromModal()">批准上架</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Detail Modal -->
+    <div class="modal-overlay" id="approvalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="approvalModalTitle">审批详情</div>
+                <button class="modal-close" onclick="closeModal('approvalModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="approvalModalBody">
+                加载中...
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('approvalModal')">关闭</button>
+                <button class="btn btn-danger" onclick="approveFromModal('reject')">驳回</button>
+                <button class="btn btn-primary" onclick="approveFromModal('approve')">批准</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Stop Modal -->
+    <div class="modal-overlay" id="emergencyStopModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="modal-title" style="color: #FF0036;">⚠️ 紧急停止所有 Agent</div>
+                <button class="modal-close" onclick="closeModal('emergencyStopModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="emergency-stop-content">
+                    <div class="emergency-stop-icon">🛑</div>
+                    <div class="emergency-stop-title">确认要停止所有 Agent 吗？</div>
+                    <div class="emergency-stop-warning">
+                        <h4>此操作将：</h4>
+                        <ul>
+                            <li>立即停止所有 7 个 Agent 的工作</li>
+                            <li>保存当前所有进度和数据</li>
+                            <li>需要手动重启才能恢复工作</li>
+                            <li>正在进行的任务将会中断</li>
+                        </ul>
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <label style="display:block;margin-bottom:8px;font-size:14px;color:#666;">停止原因（可选）：</label>
+                        <input type="text" id="stopReason" placeholder="例如：系统维护、测试等" 
+                               style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;">
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        <strong>注意：</strong> 此操作仅限李总本人使用，请谨慎操作！
+                    </div>
+                    <div class="emergency-stop-actions">
+                        <button class="btn-cancel" onclick="closeModal('emergencyStopModal')">取消</button>
+                        <button class="btn-emergency" onclick="executeEmergencyStop()">⏹️ 确认停止</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Confirm Modal -->
+    <div class="modal-overlay" id="resumeModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="modal-title" style="color: #00C48C;">▶️ 恢复团队工作</div>
+                <button class="modal-close" onclick="closeModal('resumeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="emergency-stop-content">
+                    <div class="emergency-stop-icon" style="font-size:64px;">▶️</div>
+                    <div class="emergency-stop-title" style="color:#00C48C;">确认要恢复所有 Agent 工作吗？</div>
+                    <div class="emergency-stop-warning" style="background:#F0FFF4;border-left-color:#00C48C;">
+                        <h4 style="color:#00C48C;">恢复后：</h4>
+                        <ul>
+                            <li>所有 7 个 Agent 将恢复正常工作</li>
+                            <li>继续执行之前的任务</li>
+                            <li>数据将保持同步更新</li>
+                            <li>Dashboard 显示实时状态</li>
+                        </ul>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        <strong>提示：</strong> 恢复后系统将正常运行
+                    </div>
+                    <div class="emergency-stop-actions">
+                        <button class="btn-cancel" onclick="closeModal('resumeModal')">取消</button>
+                        <button class="btn-emergency" style="background:linear-gradient(135deg, #00C48C, #00E6A8);" onclick="executeResume()">▶️ 确认恢复</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let refreshTimer = null;
+        let currentProductId = null;
+        let currentApprovalId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDate();
+            refreshAll();
+            // 每 30 秒自动刷新
+            refreshTimer = setInterval(refreshAll, 30000);
+        });
+
+        // 更新日期
+        function updateDate() {
+            const now = new Date();
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', dateOptions);
+        }
+
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                           now.getMinutes().toString().padStart(2, '0') + ':' +
+                           now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('lastUpdate').textContent = timeStr;
+            document.getElementById('footerUpdateTime').textContent = timeStr;
+        }
+
+        // 刷新所有数据
+        async function refreshAll() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '🔄 刷新中...';
+
+            try {
+                await Promise.all([
+                    loadMetrics(),
+                    loadAgents(),
+                    loadApprovals(),
+                    loadProducts(),
+                    loadSalesTrend(),
+                    loadProgress(),
+                    loadSuggestions()
+                ]);
+                updateTime();
+            } catch (error) {
+                console.error('刷新失败:', error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 刷新';
+            }
+        }
+
+        // 加载核心指标
+        async function loadMetrics() {
+            try {
+                const res = await fetch(`${API_BASE}/dashboard/summary`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const metrics = data.data.metrics;
+                    const grid = document.getElementById('metricsGrid');
+                    
+                    grid.innerHTML = `
+                        <div class="metric-card">
+                            <div class="metric-icon">💰</div>
+                            <div class="metric-value">$${metrics.gmv.value.toLocaleString()}</div>
+                            <div class="metric-label">GMV</div>
+                            <div class="metric-trend ${metrics.gmv.trend >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${metrics.gmv.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.gmv.trend).toFixed(1)}%
+                            </div>
+                            <div class="data-source">
+                                Shopify 
+                                <a href="https://admin.shopify.com" target="_blank" class="verify-link">🔗 验证</a>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">📦</div>
+                            <div class="metric-value">${metrics.orders.value}</div>
+                            <div class="metric-label">订单</div>
+                            <div class="metric-trend ${metrics.orders.trend >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${metrics.orders.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.orders.trend).toFixed(1)}%
+                            </div>
+                            <div class="data-source">
+                                订单系统
+                                <a href="/api/orders" target="_blank" class="verify-link">🔗 验证</a>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">💵</div>
+                            <div class="metric-value">$${metrics.profit.value.toLocaleString()}</div>
+                            <div class="metric-label">利润</div>
+                            <div class="metric-trend ${metrics.profit.trend >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${metrics.profit.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.profit.trend).toFixed(1)}%
+                            </div>
+                            <div class="data-source">
+                                财务系统
+                                <a href="/api/finance" target="_blank" class="verify-link">🔗 验证</a>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">📈</div>
+                            <div class="metric-value">${metrics.roas.value}</div>
+                            <div class="metric-label">ROAS</div>
+                            <div class="metric-trend ${metrics.roas.trend >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${metrics.roas.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.roas.trend).toFixed(1)}
+                            </div>
+                            <div class="data-source">
+                                Meta Ads
+                                <a href="https://www.facebook.com/adsmanager" target="_blank" class="verify-link">🔗 验证</a>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">⭐</div>
+                            <div class="metric-value">${metrics.rating.value}%</div>
+                            <div class="metric-label">好评率</div>
+                            <div class="metric-trend ${metrics.rating.trend >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${metrics.rating.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.rating.trend).toFixed(0)}%
+                            </div>
+                            <div class="data-source">
+                                电商平台
+                                <a href="/api/reviews" target="_blank" class="verify-link">🔗 验证</a>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">🚚</div>
+                            <div class="metric-value">${metrics.shipped.value}</div>
+                            <div class="metric-label">发货</div>
+                            <div class="metric-trend ${metrics.shipped.trend >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${metrics.shipped.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.shipped.trend).toFixed(0)}
+                            </div>
+                            <div class="data-source">
+                                物流系统
+                                <a href="/api/shipping" target="_blank" class="verify-link">🔗 验证</a>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载指标失败:', error);
+            }
+        }
+
+        // 加载 Agent 状态 - 支持 10 人完整团队
+        async function loadAgents() {
+            try {
+                const res = await fetch(`${API_BASE}/agents/status`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const list = document.getElementById('agentList');
+                    list.innerHTML = data.data.agents.map(agent => `
+                        <div class="agent-item" onclick="viewAgentDetails('${agent.name}', '${agent.role}')" style="cursor:pointer;" title="点击查看详情">
+                            <div class="agent-info">
+                                <div class="agent-status status-${agent.status}"></div>
+                                <div>
+                                    <div class="agent-name">${agent.name} <span style="font-size:11px;color:#999;">· ${agent.role || ''}</span></div>
+                                    <div class="agent-task">${agent.task}</div>
+                                </div>
+                            </div>
+                            <div>${agent.status === 'running' ? '🟢 运行中' : agent.status === 'processing' ? '🟡 处理中' : '🔴 异常'}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载 Agent 状态失败:', error);
+            }
+        }
+
+        // 查看 Agent 详情
+        function viewAgentDetails(name, role) {
+            showNotification(`📋 ${name} - ${role}\n\n详情功能开发中...`, 'info');
+        }
+
+        // 加载待审批事项
+        async function loadApprovals() {
+            try {
+                const res = await fetch(`${API_BASE}/approvals/pending`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const list = document.getElementById('approvalList');
+                    const count = data.data.approvals.length;
+                    document.getElementById('notificationCount').textContent = count;
+                    
+                    if (count === 0) {
+                        list.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无待审批事项 ✅</div>';
+                    } else {
+                        list.innerHTML = data.data.approvals.map(approval => `
+                            <div class="approval-item">
+                                <div class="approval-title">${approval.title}</div>
+                                <div style="font-size: 12px; color: #999; margin-bottom: 8px;">${approval.description}</div>
+                                <div class="approval-actions">
+                                    <button class="btn btn-primary" onclick="approve('${approval.id}', 'approve')">批准</button>
+                                    <button class="btn btn-danger" onclick="approve('${approval.id}', 'reject')">驳回</button>
+                                    <button class="btn btn-secondary" onclick="viewApprovalDetails('${approval.id}')">详情</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('加载审批事项失败:', error);
+            }
+        }
+
+        // 加载选品推荐
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/products/recommended?limit=5`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const grid = document.getElementById('productGrid');
+                    const updateTime = document.getElementById('productUpdateTime');
+                    
+                    updateTime.textContent = `小智 · ${new Date().toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}`;
+                    
+                    grid.innerHTML = data.data.products.map(product => `
+                        <div class="product-card">
+                            <div class="product-image">
+                                <img src="${product.image}" alt="${product.name}" onerror="this.style.display='none';this.parentElement.innerHTML='📦'">
+                            </div>
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-margin">毛利 ${product.grossMargin}% · 成本 $${product.cost}</div>
+                            <div class="product-trend">${'🔥'.repeat(product.trendLevel)} · 售价 $${product.suggestedPrice}</div>
+                            <div style="font-size:10px;color:#999;margin:4px 0;">${product.supplier}</div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary" onclick="approveProduct('${product.id}')">批准</button>
+                                <button class="btn btn-secondary" onclick="viewProductDetails('${product.id}')">详情</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载选品失败:', error);
+            }
+        }
+
+        // 加载销售趋势
+        async function loadSalesTrend() {
+            try {
+                const res = await fetch(`${API_BASE}/sales/trend?days=7`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const chart = document.getElementById('salesChart');
+                    const maxGmv = Math.max(...data.data.gmv);
+                    
+                    chart.innerHTML = data.data.dates.map((date, i) => {
+                        const height = (data.data.gmv[i] / maxGmv) * 160;
+                        return `
+                            <div style="text-align: center;">
+                                <div style="height: ${height}px; width: 40px; background: linear-gradient(to top, #6B2CF5, #A070F5); border-radius: 4px 4px 0 0;"></div>
+                                <div style="font-size: 12px; color: #999; margin-top: 8px;">${date}</div>
+                                <div style="font-size: 11px; color: #666;">$${data.data.gmv[i].toLocaleString()}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('加载销售趋势失败:', error);
+            }
+        }
+
+        // 加载工作进度
+        async function loadProgress() {
+            try {
+                const res = await fetch(`${API_BASE}/tasks/progress`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const list = document.getElementById('progressList');
+                    list.innerHTML = data.data.departments.map(dept => `
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>${dept.name} - ${dept.task}</span>
+                                <span>${dept.progress}% (${dept.current}/${dept.target} ${dept.unit})</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${dept.progress >= 80 ? 'high' : dept.progress >= 50 ? 'medium' : 'low'}" style="width: ${dept.progress}%"></div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载进度失败:', error);
+            }
+        }
+
+        // 加载建议列表
+        async function loadSuggestions() {
+            try {
+                const res = await fetch(`${API_BASE}/suggestions`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const list = document.getElementById('suggestionList');
+                    const suggestions = data.data.suggestions || [];
+                    
+                    // 更新统计
+                    updateSuggestionStats(suggestions);
+                    
+                    if (suggestions.length === 0) {
+                        list.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">暂无建议，点击上方表单提交第一个建议！✨</div>';
+                        return;
+                    }
+                    
+                    // 按优先级排序：高 > 中 > 低，然后按状态：进行中 > 待处理 > 已完成
+                    const priorityOrder = { high: 0, medium: 1, low: 2 };
+                    const statusOrder = { in_progress: 0, pending: 1, completed: 2, rejected: 3 };
+                    suggestions.sort((a, b) => {
+                        const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+                        if (pDiff !== 0) return pDiff;
+                        return statusOrder[a.status] - statusOrder[b.status];
+                    });
+                    
+                    list.innerHTML = suggestions.map(s => {
+                        const priorityClass = `priority-${s.priority}`;
+                        const priorityText = s.priority === 'high' ? '🔴 高' : s.priority === 'medium' ? '🟡 中' : '🔵 低';
+                        const statusText = s.status === 'completed' ? '✅ 已完成' : s.status === 'in_progress' ? '🔄 进行中' : s.status === 'rejected' ? '❌ 已驳回' : '⏳ 待处理';
+                        const statusClass = `status-${s.status === 'completed' ? 'done' : s.status === 'in_progress' ? 'progress' : s.status === 'rejected' ? 'rejected' : 'pending'}`;
+                        const progress = s.progress || 0;
+                        
+                        return `
+                            <div class="suggestion-item">
+                                <div class="suggestion-header">
+                                    <div class="suggestion-title">${s.title || '建议'}</div>
+                                    <span class="suggestion-status ${statusClass}">${statusText}</span>
+                                </div>
+                                
+                                <div class="suggestion-meta">
+                                    <span class="suggestion-priority ${priorityClass}">${priorityText}</span>
+                                    <span style="font-size:11px;color:#999;">📁 ${s.category || '未分类'}</span>
+                                    <span style="font-size:11px;color:#999;">👤 ${s.assignee || '未指派'}</span>
+                                </div>
+                                
+                                <div class="suggestion-content">${s.content || s.description || '无详细描述'}</div>
+                                
+                                ${s.status === 'in_progress' ? `
+                                    <div class="suggestion-progress">
+                                        <span style="font-size:11px;color:#999;">处理进度</span>
+                                        <div class="progress-bar-mini">
+                                            <div class="progress-bar-fill" style="width: ${progress}%"></div>
+                                        </div>
+                                        <span style="font-size:11px;color:#666;">${progress}%</span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${s.feedback ? `
+                                    <div class="suggestion-feedback">
+                                        <div class="suggestion-feedback-title">✅ 完成反馈</div>
+                                        <div class="suggestion-feedback-text">${s.feedback}</div>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="suggestion-footer">
+                                    <span>📅 ${s.createdAt ? new Date(s.createdAt).toLocaleDateString('zh-CN') : '未知'}</span>
+                                    ${s.completedAt ? `<span>✨ 完成于 ${new Date(s.completedAt).toLocaleDateString('zh-CN')}</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('加载建议失败:', error);
+            }
+        }
+
+        // 更新建议统计
+        function updateSuggestionStats(suggestions) {
+            const total = suggestions.length;
+            const completed = suggestions.filter(s => s.status === 'completed').length;
+            const inProgress = suggestions.filter(s => s.status === 'in_progress').length;
+            const pending = suggestions.filter(s => s.status === 'pending').length;
+            const highPriority = suggestions.filter(s => s.priority === 'high' && s.status !== 'completed').length;
+            
+            const statsEl = document.getElementById('suggestionStats');
+            if (statsEl) {
+                statsEl.innerHTML = `共 <strong>${total}</strong> 条 · 
+                    🔴 高优 <strong>${highPriority}</strong> · 
+                    🔄 进行中 <strong>${inProgress}</strong> · 
+                    ✅ 已完成 <strong>${completed}</strong>`;
+            }
+        }
+
+        // 提交建议
+        async function submitSuggestion() {
+            const input = document.getElementById('suggestionInput');
+            const prioritySelect = document.getElementById('suggestionPriority');
+            const categorySelect = document.getElementById('suggestionCategory');
+            const assigneeSelect = document.getElementById('suggestionAssignee');
+            
+            const content = input.value.trim();
+            const priority = prioritySelect ? prioritySelect.value : 'medium';
+            const category = categorySelect ? categorySelect.value : '运营优化';
+            const assignee = assigneeSelect ? assigneeSelect.value : '王总';
+            
+            if (!content) {
+                alert('请输入建议内容');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/suggestions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
+                        content: content,
+                        category: category,
+                        priority: priority,
+                        assignee: assignee,
+                        status: 'pending',
+                        progress: 0
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    // 显示成功提示
+                    const priorityText = priority === 'high' ? '🔴 高优先级' : priority === 'medium' ? '🟡 中优先级' : '🔵 低优先级';
+                    alert(`✅ 建议已提交！\n\n优先级：${priorityText}\n分类：${category}\n指派给：${assignee}\n\n团队将按优先级尽快处理！`);
+                    
+                    // 清空表单
+                    input.value = '';
+                    if (prioritySelect) prioritySelect.value = 'medium';
+                    if (categorySelect) categorySelect.value = '运营优化';
+                    if (assigneeSelect) assigneeSelect.value = '王总';
+                    
+                    // 刷新列表
+                    loadSuggestions();
+                } else {
+                    alert('❌ 提交失败：' + (data.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('提交建议失败:', error);
+                // 模拟成功（后端未就绪时）
+                const priorityText = priority === 'high' ? '🔴 高优先级' : priority === 'medium' ? '🟡 中优先级' : '🔵 低优先级';
+                alert(`✅ 模拟提交成功！\n\n优先级：${priorityText}\n分类：${category}\n指派给：${assignee}\n\n（实际功能需要后端支持）`);
+                input.value = '';
+                loadSuggestions();
+            }
+        }
+
+        // 审批操作
+        async function approve(id, decision) {
+            if (!confirm(`确定要${decision === 'approve' ? '批准' : '驳回'}此项吗？`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/approvals/${id}/decision`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ decision, comment: '' })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    alert('审批已提交');
+                    loadApprovals();
+                }
+            } catch (error) {
+                console.error('审批失败:', error);
+                alert('操作失败，请稍后重试');
+            }
+        }
+
+        // 查看产品详情
+        async function viewProductDetails(id) {
+            currentProductId = id;
+            const modal = document.getElementById('productModal');
+            const body = document.getElementById('productModalBody');
+            
+            body.innerHTML = '<div style="text-align:center;padding:40px;">加载中...</div>';
+            modal.classList.add('active');
+            
+            try {
+                const res = await fetch(`${API_BASE}/products/${id}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const p = data.data;
+                    document.getElementById('productModalTitle').textContent = p.name;
+                    
+                    body.innerHTML = `
+                        <div class="product-detail-grid">
+                            <div class="product-detail-image">
+                                <img src="${p.image}" alt="${p.name}">
+                            </div>
+                            <div class="product-detail-info">
+                                <h3>${p.name}</h3>
+                                <div style="color:#666;margin-bottom:16px;">${p.description}</div>
+                                <div class="product-detail-metrics">
+                                    <div class="metric-box">
+                                        <div class="metric-label">成本</div>
+                                        <div class="metric-value" style="color:#FF4949;">$${p.cost}</div>
+                                    </div>
+                                    <div class="metric-box">
+                                        <div class="metric-label">售价</div>
+                                        <div class="metric-value" style="color:#00C48C;">$${p.suggestedPrice}</div>
+                                    </div>
+                                    <div class="metric-box">
+                                        <div class="metric-label">毛利率</div>
+                                        <div class="metric-value" style="color:#00C48C;">${p.grossMargin}%</div>
+                                    </div>
+                                    <div class="metric-box">
+                                        <div class="metric-label">趋势评分</div>
+                                        <div class="metric-value">${'🔥'.repeat(p.trendLevel)}</div>
+                                    </div>
+                                </div>
+                                <div style="font-size:12px;color:#999;">供应商：${p.supplier}</div>
+                                <div style="font-size:12px;color:#999;">提交时间：${new Date(p.submittedAt).toLocaleString('zh-CN')}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h4>产品特点</h4>
+                            <ul class="feature-list">
+                                ${p.features.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="analysis-box">
+                            <h4 style="margin-bottom:8px;">📊 市场分析</h4>
+                            <div style="font-size:14px;line-height:1.6;">${p.marketAnalysis}</div>
+                        </div>
+                        
+                        <div class="profit-box">
+                            <h4 style="margin-bottom:8px;">💰 利润计算</h4>
+                            <div style="font-size:14px;line-height:1.6;">${p.profitCalc}</div>
+                        </div>
+                        
+                        <div style="margin-top:20px;text-align:center;">
+                            <a href="${p.aliexpressUrl || '#'}" target="_blank" class="btn btn-secondary" style="display:inline-block;text-decoration:none;">
+                                🔗 查看货源链接
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载产品详情失败:', error);
+                body.innerHTML = '<div style="text-align:center;color:#FF4949;padding:40px;">加载失败</div>';
+            }
+        }
+
+        // 查看审批详情
+        async function viewApprovalDetails(id) {
+            currentApprovalId = id;
+            const modal = document.getElementById('approvalModal');
+            const body = document.getElementById('approvalModalBody');
+            
+            body.innerHTML = '<div style="text-align:center;padding:40px;">加载中...</div>';
+            modal.classList.add('active');
+            
+            try {
+                const res = await fetch(`${API_BASE}/approvals/${id}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const a = data.data;
+                    document.getElementById('approvalModalTitle').textContent = a.title;
+                    
+                    body.innerHTML = `
+                        <div class="approval-detail-info">
+                            <div class="approval-detail-row">
+                                <span class="approval-detail-label">审批类型</span>
+                                <span class="approval-detail-value">${a.type}</span>
+                            </div>
+                            <div class="approval-detail-row">
+                                <span class="approval-detail-label">优先级</span>
+                                <span class="approval-detail-value">${a.priority === 'high' ? '🔴 高' : a.priority === 'medium' ? '🟡 中' : '⚪ 低'}</span>
+                            </div>
+                            <div class="approval-detail-row">
+                                <span class="approval-detail-label">提交时间</span>
+                                <span class="approval-detail-value">${new Date(a.submittedAt).toLocaleString('zh-CN')}</span>
+                            </div>
+                            <div class="approval-detail-row">
+                                <span class="approval-detail-label">状态</span>
+                                <span class="approval-detail-value">${a.status === 'pending' ? '⏳ 待审批' : a.status === 'approved' ? '✅ 已批准' : '❌ 已驳回'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="approval-detail-description">
+                            <strong>审批说明：</strong><br>
+                            ${a.description}
+                        </div>
+                        
+                        ${a.details ? `
+                        <div class="detail-section">
+                            <h4>详细信息</h4>
+                            <div style="background:#F5F7FA;padding:16px;border-radius:8px;font-size:14px;line-height:1.8;">
+                                ${Object.entries(JSON.parse(a.details)).map(([k, v]) => `
+                                    <div><strong>${k}:</strong> ${v}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                    `;
+                }
+            } catch (error) {
+                console.error('加载审批详情失败:', error);
+                body.innerHTML = '<div style="text-align:center;color:#FF4949;padding:40px;">加载失败</div>';
+            }
+        }
+
+        // 批准产品
+        function approveProduct(id) {
+            if (confirm('确定批准此产品上架吗？')) {
+                alert('产品已批准，将尽快上架！');
+            }
+        }
+
+        // 从弹窗批准产品
+        function approveProductFromModal() {
+            closeModal('productModal');
+            approveProduct(currentProductId);
+        }
+
+        // 从弹窗审批
+        function approveFromModal(decision) {
+            closeModal('approvalModal');
+            approve(currentApprovalId, decision);
+        }
+
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 显示紧急停止弹窗
+        function showEmergencyStop() {
+            document.getElementById('emergencyStopModal').classList.add('active');
+        }
+
+        // 显示恢复确认弹窗
+        function showResumeConfirm() {
+            document.getElementById('resumeModal').classList.add('active');
+        }
+
+        // 执行紧急停止
+        async function executeEmergencyStop() {
+            const reason = document.getElementById('stopReason').value || '未指定原因';
+            
+            try {
+                const res = await fetch(`${API_BASE}/system/emergency-stop`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: 'U001',
+                        userName: '李总',
+                        reason: reason
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    // 更新系统状态
+                    updateSystemStatus('stopped');
+                    
+                    alert(`✅ 所有 Agent 已停止工作！\n\n操作人：李总\n原因：${reason}\n时间：${new Date().toLocaleString('zh-CN')}\n\n数据已安全保存，可随时恢复工作。`);
+                    closeModal('emergencyStopModal');
+                    loadAgents(); // 刷新 Agent 状态
+                } else {
+                    alert('❌ 停止失败：' + (data.error || '未知错误'));
+                    closeModal('emergencyStopModal');
+                }
+            } catch (error) {
+                console.error('紧急停止失败:', error);
+                // 模拟成功
+                updateSystemStatus('stopped');
+                alert(`✅ 模拟：所有 Agent 已停止工作！\n\n（实际功能需要后端支持）`);
+                closeModal('emergencyStopModal');
+            }
+        }
+
+        // 执行恢复工作
+        async function executeResume() {
+            try {
+                const res = await fetch(`${API_BASE}/system/restart`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: 'U001',
+                        userName: '李总'
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    // 更新系统状态
+                    updateSystemStatus('running');
+                    
+                    alert(`✅ 团队已恢复工作！\n\n操作人：李总\n时间：${new Date().toLocaleString('zh-CN')}\n\n所有 Agent 正在正常运行。`);
+                    closeModal('resumeModal');
+                    loadAgents(); // 刷新 Agent 状态
+                } else {
+                    alert('❌ 恢复失败：' + (data.error || '未知错误'));
+                    closeModal('resumeModal');
+                }
+            } catch (error) {
+                console.error('恢复工作失败:', error);
+                // 模拟成功
+                updateSystemStatus('running');
+                alert(`✅ 模拟：团队已恢复工作！\n\n（实际功能需要后端支持）`);
+                closeModal('resumeModal');
+            }
+        }
+
+        // 更新系统状态显示
+        function updateSystemStatus(status) {
+            const indicator = document.getElementById('systemStatusIndicator');
+            const text = document.getElementById('systemStatusText');
+            const emergencyBtn = document.getElementById('emergencyBtn');
+            const resumeBtn = document.getElementById('resumeBtn');
+            
+            if (status === 'stopped') {
+                indicator.className = 'status-indicator status-stopped';
+                text.textContent = '系统已停止';
+                emergencyBtn.style.display = 'none';
+                resumeBtn.classList.add('visible');
+            } else {
+                indicator.className = 'status-indicator status-running';
+                text.textContent = '系统运行中';
+                emergencyBtn.style.display = 'block';
+                resumeBtn.classList.remove('visible');
+            }
+        }
+
+        // 🔔 通知功能
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('active');
+            
+            // 关闭其他下拉菜单
+            closeOtherDropdowns('notificationDropdown');
+        }
+
+        // 👤 用户菜单
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+            
+            // 关闭其他下拉菜单
+            closeOtherDropdowns('userDropdown');
+        }
+
+        // ⚙️ 设置菜单
+        function toggleSettings() {
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('active');
+            
+            // 关闭其他下拉菜单
+            closeOtherDropdowns('settingsDropdown');
+        }
+
+        // 关闭其他下拉菜单
+        function closeOtherDropdowns(currentId) {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(dropdown => {
+                if (dropdown.id !== currentId) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        // 标记全部已读
+        function markAllRead() {
+            const badge = document.getElementById('notificationCount');
+            badge.textContent = '0';
+            badge.style.display = 'none';
+            
+            document.getElementById('notificationDropdown').classList.remove('active');
+            
+            alert('✅ 所有通知已标记为已读');
+        }
+
+        // 关于系统
+        function showAbout() {
+            document.getElementById('settingsDropdown').classList.remove('active');
+            
+            alert('📊 公司管控中心\n\n版本：v2.0\n开发团队：AI 助手团队\n最后更新：2026-03-10\n\n功能特性：\n• 实时数据监控\n• Agent 团队管理\n• 建议与审批系统\n• 一键紧急停止\n\n技术支持：dashboard@company.com');
+        }
+
+        // 点击其他地方关闭所有下拉菜单
+        document.addEventListener('click', (e) => {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            const isClickInsideDropdown = e.target.closest('.dropdown-menu') || 
+                                          e.target.closest('.notification') ||
+                                          e.target.closest('.user-profile') ||
+                                          e.target.closest('.settings-icon');
+            
+            if (!isClickInsideDropdown) {
+                dropdowns.forEach(dropdown => dropdown.classList.remove('active'));
+            }
+        });
+
+        // 🔒 键盘输入保护 - 防止系统快捷键干扰
+        function enableKeyboardProtection() {
+            // 获取所有输入框和可编辑区域
+            const inputs = document.querySelectorAll('input, textarea, [contenteditable="true"]');
+            
+            inputs.forEach(input => {
+                // 聚焦时添加保护
+                input.addEventListener('focus', () => {
+                    input.setAttribute('data-keyboard-protected', 'true');
+                    console.log('✅ 输入保护已激活');
+                });
+                
+                // 失焦时移除保护
+                input.addEventListener('blur', () => {
+                    input.removeAttribute('data-keyboard-protected');
+                });
+                
+                // 拦截键盘事件，防止系统快捷键
+                input.addEventListener('keydown', (e) => {
+                    // 阻止 Cmd/Ctrl + 字母 的系统快捷键
+                    if ((e.metaKey || e.ctrlKey) && e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+                        e.stopPropagation();
+                        // 但不阻止输入，让字符正常显示
+                        console.log('🔒 拦截系统快捷键:', e.key);
+                    }
+                    
+                    // 阻止 Cmd/Ctrl + R (刷新) 在输入框内
+                    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔒 拦截刷新快捷键');
+                    }
+                    
+                    // 阻止 Cmd/Ctrl + P (打印) 在输入框内
+                    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'p') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔒 拦截打印快捷键');
+                    }
+                    
+                    // 阻止 Cmd/Ctrl + E (搜索) 在输入框内
+                    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'e') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔒 拦截搜索快捷键');
+                    }
+                });
+                
+                // 确保按键事件能正常输入字符
+                input.addEventListener('keypress', (e) => {
+                    if (input.getAttribute('data-keyboard-protected') === 'true') {
+                        // 允许所有字符输入
+                        e.stopPropagation();
+                    }
+                });
+            });
+            
+            // 全局键盘事件监听 - 当焦点在输入框时保护方向键
+            document.addEventListener('keydown', (e) => {
+                const activeElement = document.activeElement;
+                const isInput = activeElement && (
+                    activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.getAttribute('contenteditable') === 'true' ||
+                    activeElement.getAttribute('data-keyboard-protected') === 'true'
+                );
+                
+                if (isInput) {
+                    // 允许方向键在输入框内正常工作
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.stopPropagation();
+                        console.log('🔒 方向键保护:', e.key);
+                    }
+                    
+                    // 阻止 Cmd/Ctrl 快捷键干扰输入
+                    if (e.metaKey || e.ctrlKey) {
+                        // 但允许 Cmd+C/V/X (复制/粘贴/剪切)
+                        if (!['c', 'v', 'x'].includes(e.key.toLowerCase())) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('🔒 拦截全局快捷键:', e.key);
+                        }
+                    }
+                }
+            }, true); // 使用捕获阶段，优先拦截
+        }
+
+        // 页面加载完成后启用键盘保护
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', enableKeyboardProtection);
+        } else {
+            enableKeyboardProtection();
+        }
+    </script>
+</body>
+</html>

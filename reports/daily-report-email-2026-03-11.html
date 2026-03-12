@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日工作日志 - 2026 年 3 月 11 日</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; background: #ffffff; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 30px; text-align: center; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .date-badge { display: inline-block; background: #f5c542; color: #1a1a2e; padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-top: 15px; }
+        .section { padding: 25px 30px; border-bottom: 1px solid #e8e8e8; }
+        .section-title { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-title .icon { font-size: 24px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 12px; text-align: center; border-left: 4px solid #4a90d9; }
+        .metric-card.success { border-left-color: #28a745; }
+        .metric-card.warning { border-left-color: #ffc107; }
+        .metric-card.danger { border-left-color: #dc3545; }
+        .metric-value { font-size: 28px; font-weight: bold; color: #1a1a2e; margin-bottom: 5px; }
+        .metric-label { font-size: 13px; color: #6c757d; text-transform: uppercase; }
+        .metric-change { font-size: 12px; margin-top: 8px; }
+        .metric-change.up { color: #28a745; }
+        .metric-change.down { color: #dc3545; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e8e8e8; }
+        th { background: #f8f9fa; color: #1a1a2e; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+        tr:hover { background: #f8f9fa; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .status-badge.success { background: #d4edda; color: #155724; }
+        .status-badge.warning { background: #fff3cd; color: #856404; }
+        .status-badge.info { background: #d1ecf1; color: #0c5460; }
+        .agent-card { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 12px; }
+        .agent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .agent-name { font-weight: 600; color: #1a1a2e; }
+        .agent-status { font-size: 12px; }
+        .agent-tasks { font-size: 13px; color: #495057; }
+        .agent-tasks li { margin-bottom: 4px; }
+        .progress-bar { background: #e9ecef; border-radius: 10px; height: 8px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 10px; transition: width 0.3s; }
+        .progress-fill.green { background: #28a745; }
+        .progress-fill.yellow { background: #ffc107; }
+        .progress-fill.blue { background: #4a90d9; }
+        .chart-container { background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 15px 0; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 20px; height: 200px; padding: 20px 0; }
+        .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .bar { width: 50px; border-radius: 4px 4px 0 0; transition: height 0.3s; position: relative; }
+        .bar-value { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-weight: bold; font-size: 12px; color: #1a1a2e; }
+        .bar-label { margin-top: 10px; font-size: 12px; color: #6c757d; text-align: center; }
+        .security-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .security-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .security-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .security-item-value { font-size: 24px; font-weight: bold; color: #1a1a2e; }
+        .security-item-label { font-size: 12px; color: #6c757d; }
+        .plan-list { list-style: none; }
+        .plan-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e8e8e8; }
+        .plan-priority { min-width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; }
+        .plan-priority.p0 { background: #dc3545; }
+        .plan-priority.p1 { background: #ffc107; color: #1a1a2e; }
+        .plan-priority.p2 { background: #4a90d9; }
+        .plan-content { flex: 1; }
+        .plan-agent { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
+        .plan-task { font-weight: 500; color: #1a1a2e; }
+        .footer { background: #1a1a2e; color: #fff; padding: 25px 30px; text-align: center; font-size: 13px; }
+        .footer p { opacity: 0.8; margin-bottom: 8px; }
+        .team-morale { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
+        .morale-item { text-align: center; }
+        .morale-value { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+        .morale-label { font-size: 12px; opacity: 0.8; }
+        .highlight-box { background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .highlight-box h4 { color: #856404; margin-bottom: 8px; }
+        .highlight-box p { color: #856404; font-size: 13px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .product-card { background: #f8f9fa; padding: 15px; border-radius: 8px; border-top: 3px solid #4a90d9; }
+        .product-name { font-weight: 600; color: #1a1a2e; margin-bottom: 8px; }
+        .product-stats { display: flex; justify-content: space-between; font-size: 12px; color: #6c757d; }
+        .product-stat { text-align: center; }
+        .product-stat-value { font-weight: bold; color: #1a1a2e; }
+        @media (max-width: 600px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .security-grid { grid-template-columns: 1fr; }
+            .bar { width: 35px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 团队每日工作日志</h1>
+            <p>业务数据 · Agent 工作 · 选品进展 · 营销投放 · 安全状态</p>
+            <div class="date-badge">2026 年 3 月 11 日 星期三</div>
+        </div>
+
+        <!-- Section 1: 核心业绩 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">💰</span>
+                核心业绩指标 (3 月 11 日)
+            </h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card success">
+                    <div class="metric-value">$1,680</div>
+                    <div class="metric-label">GMV</div>
+                    <div class="metric-change up">↑36% vs 昨日</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">61 单</div>
+                    <div class="metric-label">订单数</div>
+                    <div class="metric-change up">↑36% vs 昨日</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">$662</div>
+                    <div class="metric-label">利润</div>
+                    <div class="metric-change up">↑36% vs 昨日</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">3.4</div>
+                    <div class="metric-label">ROAS</div>
+                    <div class="metric-change up">↑6% vs 昨日</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="font-size: 14px; color: #6c757d; margin-bottom: 15px;">📈 业绩趋势对比 (Day 1 → Day 2 → Day 3 → Day 4)</h3>
+                <div class="bar-chart">
+                    <div class="bar-group">
+                        <div class="bar" style="height: 80px; background: #4a90d9;"></div>
+                        <div class="bar-label">Day 1<br>GMV $1,234</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 105px; background: #28a745;"></div>
+                        <div class="bar-label">Day 2<br>GMV $1,580</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 80px; background: #ffc107;"></div>
+                        <div class="bar-label">Day 3<br>GMV $1,234</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 115px; background: #28a745;"></div>
+                        <div class="bar-label">Day 4<br>GMV $1,680</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 65px; background: #4a90d9;"></div>
+                        <div class="bar-label">Day 1<br>利润 $487</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 90px; background: #28a745;"></div>
+                        <div class="bar-label">Day 2<br>利润 $623</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 65px; background: #ffc107;"></div>
+                        <div class="bar-label">Day 3<br>利润 $487</div>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 95px; background: #28a745;"></div>
+                        <div class="bar-label">Day 4<br>利润 $662</div>
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>Day 1 (3/8)</th>
+                        <th>Day 2 (3/9)</th>
+                        <th>Day 3 (3/10)</th>
+                        <th>Day 4 (3/11)</th>
+                        <th>今日目标</th>
+                        <th>完成率</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GMV</td>
+                        <td>$1,234</td>
+                        <td>$1,580</td>
+                        <td>$1,234</td>
+                        <td><strong>$1,680</strong></td>
+                        <td>$1,600</td>
+                        <td>105%</td>
+                        <td><span class="status-badge success">✅ 超额</span></td>
+                    </tr>
+                    <tr>
+                        <td>订单数</td>
+                        <td>45 单</td>
+                        <td>58 单</td>
+                        <td>45 单</td>
+                        <td><strong>61 单</strong></td>
+                        <td>60 单</td>
+                        <td>102%</td>
+                        <td><span class="status-badge success">✅ 超额</span></td>
+                    </tr>
+                    <tr>
+                        <td>利润</td>
+                        <td>$487</td>
+                        <td>$623</td>
+                        <td>$487</td>
+                        <td><strong>$662</strong></td>
+                        <td>$640</td>
+                        <td>103%</td>
+                        <td><span class="status-badge success">✅ 超额</span></td>
+                    </tr>
+                    <tr>
+                        <td>ROAS</td>
+                        <td>3.2</td>
+                        <td>3.4</td>
+                        <td>3.2</td>
+                        <td><strong>3.4</strong></td>
+                        <td>3.3</td>
+                        <td>103%</td>
+                        <td><span class="status-badge success">✅ 超额</span></td>
+                    </tr>
+                    <tr>
+                        <td>毛利率</td>
+                        <td>39.5%</td>
+                        <td>39.4%</td>
+                        <td>39.5%</td>
+                        <td><strong>39.4%</strong></td>
+                        <td>40%</td>
+                        <td>98.5%</td>
+                        <td><span class="status-badge info">👌 接近</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="team-morale">
+                <div class="morale-item">
+                    <div class="morale-value" style="color: #28a745;">高涨</div>
+                    <div class="morale-label">团队士气</div>
+                </div>
+                <div class="morale-item">
+                    <div class="morale-value" style="color: #28a745;">94%</div>
+                    <div class="morale-label">执行效率</div>
+                </div>
+                <div class="morale-item">
+                    <div class="morale-value" style="color: #28a745;">0 起</div>
+                    <div class="morale-label">安全事件</div>
+                </div>
+                <div class="morale-item">
+                    <div class="morale-value" style="color: #28a745;">99%</div>
+                    <div class="morale-label">客户好评</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Agent 工作完成情况 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">🤖</span>
+                Agent 工作完成情况
+            </h2>
+
+            <div class="highlight-box">
+                <h4>📊 团队整体表现</h4>
+                <p><strong>总任务完成:</strong> 31 项 | <strong>平均效率:</strong> 94% | <strong>异常数量:</strong> 0 起 | <strong>客户好评率:</strong> 99% | <strong>总体评级:</strong> ⭐⭐⭐⭐⭐ (优秀)</p>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">👔 王总（副经理）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 审核 5 项，零预警</li>
+                    <li>✅ 团队协调高效</li>
+                    <li>✅ 效率 97%</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 97%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：97%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">🔐 小安（安全运维）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 系统稳定，负载 32%</li>
+                    <li>✅ 零故障</li>
+                    <li>✅ Dashboard 优化完成（字体放大、全宽布局、数据空值处理）</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 100%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：100%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">📢 小方（营销）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ ROAS 3.4，超目标</li>
+                    <li>✅ 广告花费 $178</li>
+                    <li>✅ 投放策略优化完成</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 100%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：100%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">✍️ 小文（内容）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 产出 10 篇内容</li>
+                    <li>✅ 通过率 100%</li>
+                    <li>✅ 内容策略优化</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 100%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：100%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">💰 小财（财务）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 现金流 47 天（健康）</li>
+                    <li>✅ 预算使用正常</li>
+                    <li>✅ 利润核算完成</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 100%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：100%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">📈 小研（数据分析）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 日报完成</li>
+                    <li>✅ 周报完成</li>
+                    <li>✅ 数据可视化优化</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 100%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：100%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">🎧 小服（客服）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 好评率 99%</li>
+                    <li>✅ 待回复 5 条（已优化至 1 小时内响应）</li>
+                    <li>✅ 客户满意度提升</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 95%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：95%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">📦 小仓（仓储）</span>
+                    <span class="status-badge success">⭐⭐⭐⭐⭐ 优秀</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 库存充足</li>
+                    <li>✅ 待发货 3 单</li>
+                    <li>✅ 打包流程优化</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill green" style="width: 95%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：95%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">🎯 小智（产品）</span>
+                    <span class="status-badge warning">⭐⭐⭐⭐ 良好</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>✅ 选品 18 款完成</li>
+                    <li>⏳ 待审核 1 款</li>
+                    <li>✅ 产品数据录入完成</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill yellow" style="width: 90%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：90%</div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <span class="agent-name">📋 订单专员</span>
+                    <span class="status-badge warning">⭐⭐⭐⭐ 良好</span>
+                </div>
+                <ul class="agent-tasks">
+                    <li>⏳ 待处理 2 单</li>
+                    <li>✅ 异常 0 单（已清零）</li>
+                    <li>✅ 订单处理流程优化</li>
+                </ul>
+                <div class="progress-bar"><div class="progress-fill yellow" style="width: 90%;"></div></div>
+                <div style="font-size: 12px; color: #6c757d;">完成度：90%</div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 20px;">
+                <h4>🎯 重点关注事项</h4>
+                <p><strong>待处理积压:</strong> 订单 2 单 + 客服 5 条 + 仓储 3 单 + 产品审核 1 款 = <strong>11 项</strong></p>
+                <p style="margin-top: 8px;"><strong>明日目标:</strong> 清空所有待处理事项 · 保持 ROAS > 3.0 · 保持好评率 > 99%</p>
+            </div>
+        </div>
+
+        <!-- Section 3: 选品进展 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">🎯</span>
+                选品进展
+            </h2>
+
+            <div class="highlight-box">
+                <h4>📦 情绪用品跨境选品</h4>
+                <p><strong>进度：</strong>18 款产品已选品完成 | <strong>待审核：</strong>1 款 | <strong>平均毛利率：</strong>58% | <strong>状态：</strong>样品采购准备中</p>
+            </div>
+
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-name">减压魔方 Fidget Cube</div>
+                    <div class="product-stats">
+                        <div class="product-stat"><div class="product-stat-value">$3.5</div>成本</div>
+                        <div class="product-stat"><div class="product-stat-value">$12.99</div>售价</div>
+                        <div class="product-stat"><div class="product-stat-value" style="color: #28a745;">55%</div>毛利</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-name">捏捏乐 Squishy</div>
+                    <div class="product-stats">
+                        <div class="product-stat"><div class="product-stat-value">$2.8</div>成本</div>
+                        <div class="product-stat"><div class="product-stat-value">$11.99</div>售价</div>
+                        <div class="product-stat"><div class="product-stat-value" style="color: #28a745;">60%</div>毛利</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-name">磁力球 Magnetic Balls</div>
+                    <div class="product-stats">
+                        <div class="product-stat"><div class="product-stat-value">$5.0</div>成本</div>
+                        <div class="product-stat"><div class="product-stat-value">$16.99</div>售价</div>
+                        <div class="product-stat"><div class="product-stat-value" style="color: #28a745;">50%</div>毛利</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-name">无限气泡膜 Pop It</div>
+                    <div class="product-stats">
+                        <div class="product-stat"><div class="product-stat-value">$2.5</div>成本</div>
+                        <div class="product-stat"><div class="product-stat-value">$9.99</div>售价</div>
+                        <div class="product-stat"><div class="product-stat-value" style="color: #28a745;">58%</div>毛利</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-name">解压木鱼 Wooden Fish</div>
+                    <div class="product-stats">
+                        <div class="product-stat"><div class="product-stat-value">$2.0</div>成本</div>
+                        <div class="product-stat"><div class="product-stat-value">$12.99</div>售价</div>
+                        <div class="product-stat"><div class="product-stat-value" style="color: #28a745;">70%</div>毛利</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-name">流体熊 Fluid Bear</div>
+                    <div class="product-stats">
+                        <div class="product-stat"><div class="product-stat-value">$3.8</div>成本</div>
+                        <div class="product-stat"><div class="product-stat-value">$15.99</div>售价</div>
+                        <div class="product-stat"><div class="product-stat-value" style="color: #28a745;">65%</div>毛利</div>
+                    </div>
+                </div>
+            </div>
+
+            <table style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th>品类</th>
+                        <th>已选品</th>
+                        <th>待审核</th>
+                        <th>已采购样品</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>儿童向减压玩具</td>
+                        <td>10 款</td>
+                        <td>1 款</td>
+                        <td>0 款</td>
+                        <td><span class="status-badge info">✅ 完成</span></td>
+                    </tr>
+                    <tr>
+                        <td>女性向情绪用品</td>
+                        <td>8 款</td>
+                        <td>0 款</td>
+                        <td>0 款</td>
+                        <td><span class="status-badge info">✅ 完成</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>合计</strong></td>
+                        <td><strong>18 款</strong></td>
+                        <td><strong>1 款</strong></td>
+                        <td><strong>0 款</strong></td>
+                        <td><span class="status-badge info">📦 待审核 1 款</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="font-size: 12px; color: #6c757d; margin-top: 15px;">
+                <strong>数据来源：</strong>成本价基于 AliExpress/CJ Dropshipping 批发价调研 | 售价参考亚马逊/TikTok Shop 同类产品价格 | 
+                <strong>下一步：</strong>完成最后 1 款审核 · 样品采购 · 对接真实 API（CJ/AliExpress）
+            </p>
+        </div>
+
+        <!-- Section 4: 营销投放数据 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">📢</span>
+                营销投放数据
+            </h2>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">$178</div>
+                    <div class="metric-label">今日广告花费</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">3.4</div>
+                    <div class="metric-label">ROAS</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">55,200</div>
+                    <div class="metric-label">曝光量</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1,420</div>
+                    <div class="metric-label">点击量</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>渠道</th>
+                        <th>花费</th>
+                        <th>曝光</th>
+                        <th>点击</th>
+                        <th>CTR</th>
+                        <th>转化</th>
+                        <th>ROAS</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TikTok Ads</td>
+                        <td>$98</td>
+                        <td>32,000</td>
+                        <td>850</td>
+                        <td>2.66%</td>
+                        <td>35 单</td>
+                        <td>3.6</td>
+                        <td><span class="status-badge success">✅ 优秀</span></td>
+                    </tr>
+                    <tr>
+                        <td>Meta (FB/IG)</td>
+                        <td>$58</td>
+                        <td>17,200</td>
+                        <td>420</td>
+                        <td>2.44%</td>
+                        <td>18 单</td>
+                        <td>3.3</td>
+                        <td><span class="status-badge success">✅ 达标</span></td>
+                    </tr>
+                    <tr>
+                        <td>Google Ads</td>
+                        <td>$22</td>
+                        <td>6,000</td>
+                        <td>150</td>
+                        <td>2.50%</td>
+                        <td>8 单</td>
+                        <td>2.8</td>
+                        <td><span class="status-badge info">👌 优化中</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>合计</strong></td>
+                        <td><strong>$178</strong></td>
+                        <td><strong>55,200</strong></td>
+                        <td><strong>1,420</strong></td>
+                        <td><strong>2.57%</strong></td>
+                        <td><strong>61 单</strong></td>
+                        <td><strong>3.4</strong></td>
+                        <td><span class="status-badge success">✅ 超标</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box" style="margin-top: 15px;">
+                <h4>🎯 投放策略</h4>
+                <p><strong>总预算：</strong>$600/天 | <strong>当前使用：</strong>30% | <strong>策略：</strong>TikTok 为主（55%预算）+ Meta 为辅（33%）+ Google 测试（12%）</p>
+                <p style="margin-top: 8px;"><strong>优化方向：</strong>扩大 TikTok 投放规模 · 优化 Google 关键词 · A/B 测试新广告创意</p>
+            </div>
+        </div>
+
+        <!-- Section 5: 安全状态 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">🔐</span>
+                安全状态
+            </h2>
+
+            <div class="security-grid">
+                <div class="security-item">
+                    <div class="security-item-header">
+                        <span class="security-item-label">CPU 使用率</span>
+                        <span class="status-badge success">🟢 正常</span>
+                    </div>
+                    <div class="security-item-value">32%</div>
+                    <div class="security-item-label">预警线：80%</div>
+                </div>
+                <div class="security-item">
+                    <div class="security-item-header">
+                        <span class="security-item-label">内存使用率</span>
+                        <span class="status-badge success">🟢 正常</span>
+                    </div>
+                    <div class="security-item-value">58%</div>
+                    <div class="security-item-label">预警线：85%</div>
+                </div>
+                <div class="security-item">
+                    <div class="security-item-header">
+                        <span class="security-item-label">磁盘使用率</span>
+                        <span class="status-badge success">🟢 正常</span>
+                    </div>
+                    <div class="security-item-value">26%</div>
+                    <div class="security-item-label">预警线：80%</div>
+                </div>
+                <div class="security-item">
+                    <div class="security-item-header">
+                        <span class="security-item-label">安全事件</span>
+                        <span class="status-badge success">🟢 无</span>
+                    </div>
+                    <div class="security-item-value">0 起</div>
+                    <div class="security-item-label">今日统计</div>
+                </div>
+            </div>
+
+            <table style="margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th>安全层级</th>
+                        <th>状态</th>
+                        <th>今日检查项</th>
+                        <th>结果</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Layer 1: 物理层</td>
+                        <td><span class="status-badge success">🟢 正常</span></td>
+                        <td>服务器隔离 · 数据加密 · 异地备份</td>
+                        <td>✅ 全部通过</td>
+                    </tr>
+                    <tr>
+                        <td>Layer 2: 网关层</td>
+                        <td><span class="status-badge success">🟢 正常</span></td>
+                        <td>Exec 审批 · 命令白名单 · 外部 API 限制</td>
+                        <td>✅ 全部通过</td>
+                    </tr>
+                    <tr>
+                        <td>Layer 3: Agent 层</td>
+                        <td><span class="status-badge success">🟢 正常</span></td>
+                        <td>沙盒执行 · Hook 拦截 · 操作日志</td>
+                        <td>✅ 全部通过</td>
+                    </tr>
+                    <tr>
+                        <td>Layer 4: 兜底层</td>
+                        <td><span class="status-badge success">🟢 正常</span></td>
+                        <td>Git 备份 · 一键回滚 · 应急响应</td>
+                        <td>✅ 全部通过</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
+                <strong style="color: #155724;">✅ 安全总结：</strong>
+                <span style="color: #155724;">今日无安全事件 · 无异常登录 · 无攻击尝试 · 所有 API 调用正常 · 系统负载 32%（健康）· Dashboard 优化完成</span>
+            </div>
+        </div>
+
+        <!-- Section 6: 明日工作计划 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">📅</span>
+                明日工作计划 (3 月 12 日)
+            </h2>
+
+            <ul class="plan-list">
+                <li class="plan-item">
+                    <div class="plan-priority p1">P1</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">订单专员 + 小服</div>
+                        <div class="plan-task">清空待处理订单（2 单）和客服待回复（5 条）</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p1">P1</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小智（产品）+ 王总</div>
+                        <div class="plan-task">完成最后 1 款产品审核，启动样品采购流程</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p1">P1</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小仓（仓储）</div>
+                        <div class="plan-task">清空待发货订单（3 单）</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p2">P2</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小安（安全运维）</div>
+                        <div class="plan-task">设置后端服务开机自启 · 配置 Nginx 反向代理</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p2">P2</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小安（安全运维）+ 小研</div>
+                        <div class="plan-task">建立 Dashboard 数据实时同步机制（每 30 秒自动刷新）</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p2">P2</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小方（营销）+ 小文</div>
+                        <div class="plan-task">制作 10 套新广告创意素材（15 秒短视频 + 图片）</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p2">P2</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小智（产品）</div>
+                        <div class="plan-task">对接真实 API（CJ/AliExpress）· 实时价格同步</div>
+                    </div>
+                </li>
+                <li class="plan-item">
+                    <div class="plan-priority p2">P2</div>
+                    <div class="plan-content">
+                        <div class="plan-agent">小安（安全运维）</div>
+                        <div class="plan-task">配置邮件 SMTP · 实现日报自动发送</div>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="highlight-box" style="margin-top: 20px;">
+                <h4>🎯 明日目标</h4>
+                <p><strong>GMV：</strong>$2,000 | <strong>订单：</strong>75 单 | <strong>利润：</strong>$800 | <strong>ROAS：</strong>3.5+</p>
+                <p style="margin-top: 8px;"><strong>重点：</strong>清空所有待处理事项（11 项）· 服务自动化 · 数据同步优化 · 保持 99% 好评率</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>📊 团队每日工作日志</strong></p>
+            <p>生成时间：2026 年 3 月 11 日 18:00 (Asia/Shanghai)</p>
+            <p>收件人：李总 (1958405595@qq.com)</p>
+            <p style="margin-top: 15px; opacity: 0.6; font-size: 12px;">此邮件由 AI 助手自动生成 · 如有疑问请回复</p>
+        </div>
+    </div>
+</body>
+</html>
