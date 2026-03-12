@@ -17,6 +17,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dashboard-secret-2026';
 app.use(cors());
 app.use(express.json());
 
+// 静态文件服务 - 提供前端页面
+app.use('/', express.static('../frontend'));
+
 // 数据库初始化
 const db = new Database('./dashboard.db');
 
@@ -113,8 +116,35 @@ db.exec(`
   );
 `);
 
-// 注意：不再初始化模拟数据，所有数据必须来自真实数据源
-// 数据库表结构保留，但数据由真实业务系统写入
+// 初始化团队基础架构数据（10 人团队，始终存在）
+const initTeamData = () => {
+  const count = db.prepare('SELECT COUNT(*) as count FROM agents_status').get();
+  if (count.count > 0) return; // 已有数据，不重复插入
+
+  // 插入 10 人团队基础状态
+  const agents = [
+    { name: '王总', role: '副经理', status: 'running', task: '待审核事项', priority: 1 },
+    { name: '小安', role: '安全运维', status: 'running', task: '系统监控 · 安全审计', priority: 2 },
+    { name: '小智', role: '产品', status: 'running', task: '选品推荐', priority: 3 },
+    { name: '小方', role: '营销', status: 'running', task: '广告投放', priority: 4 },
+    { name: '小文', role: '内容', status: 'running', task: '素材创作', priority: 5 },
+    { name: '订单专员', role: '订单', status: 'running', task: '订单处理', priority: 6 },
+    { name: '小财', role: '财务', status: 'running', task: '财务监控', priority: 7 },
+    { name: '小服', role: '客服', status: 'running', task: '客户咨询', priority: 8 },
+    { name: '小仓', role: '仓储', status: 'running', task: '发货管理', priority: 9 },
+    { name: '小研', role: '数据分析', status: 'running', task: '数据报表', priority: 10 },
+  ];
+
+  const insert = db.prepare(`
+    INSERT INTO agents_status (name, role, status, task, priority, exceptions, updated_at)
+    VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+  `);
+
+  agents.forEach(a => insert.run(a.name, a.role, a.status, a.task, a.priority));
+  console.log('✅ 团队基础架构已初始化 (10 人)');
+};
+
+initTeamData();
 console.log('📊 Dashboard 后端服务启动 - 真实数据模式');
 
 // JWT 认证中间件
