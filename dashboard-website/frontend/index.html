@@ -1632,119 +1632,107 @@
             }
         }
 
-        // 加载核心指标
+        // 加载核心指标 - 真实数据，无数据显示"—"
         async function loadMetrics() {
             try {
                 const res = await fetch(`${API_BASE}/dashboard/summary`);
                 const data = await res.json();
                 
-                if (data.success) {
+                if (data.success && data.data.metrics && Object.keys(data.data.metrics).length > 0) {
                     const metrics = data.data.metrics;
                     const grid = document.getElementById('metricsGrid');
                     
                     grid.innerHTML = `
                         <div class="metric-card">
                             <div class="metric-icon">💰</div>
-                            <div class="metric-value">$${metrics.gmv.value.toLocaleString()}</div>
+                            <div class="metric-value">${metrics.gmv.value !== undefined ? '$' + metrics.gmv.value.toLocaleString() : '—'}</div>
                             <div class="metric-label">GMV</div>
                             <div class="metric-trend ${metrics.gmv.trend >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${metrics.gmv.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.gmv.trend).toFixed(1)}%
+                                ${metrics.gmv.trend !== undefined ? (metrics.gmv.trend >= 0 ? '↑' : '↓') : '—'} ${metrics.gmv.trend !== undefined ? Math.abs(metrics.gmv.trend).toFixed(1) : ''}%
                             </div>
-                            <div class="data-source">
-                                Shopify 
-                                <a href="https://admin.shopify.com" target="_blank" class="verify-link">🔗 验证</a>
-                            </div>
+                            <div class="data-source">Shopify <a href="https://admin.shopify.com" target="_blank" class="verify-link">🔗 验证</a></div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-icon">📦</div>
-                            <div class="metric-value">${metrics.orders.value}</div>
+                            <div class="metric-value">${metrics.orders.value !== undefined ? metrics.orders.value : '—'}</div>
                             <div class="metric-label">订单</div>
                             <div class="metric-trend ${metrics.orders.trend >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${metrics.orders.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.orders.trend).toFixed(1)}%
+                                ${metrics.orders.trend !== undefined ? (metrics.orders.trend >= 0 ? '↑' : '↓') : '—'} ${metrics.orders.trend !== undefined ? Math.abs(metrics.orders.trend).toFixed(1) : ''}%
                             </div>
-                            <div class="data-source">
-                                订单系统
-                                <a href="/api/orders" target="_blank" class="verify-link">🔗 验证</a>
-                            </div>
+                            <div class="data-source">订单系统 <a href="/api/orders" target="_blank" class="verify-link">🔗 验证</a></div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-icon">💵</div>
-                            <div class="metric-value">$${metrics.profit.value.toLocaleString()}</div>
+                            <div class="metric-value">${metrics.profit.value !== undefined ? '$' + metrics.profit.value.toLocaleString() : '—'}</div>
                             <div class="metric-label">利润</div>
                             <div class="metric-trend ${metrics.profit.trend >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${metrics.profit.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.profit.trend).toFixed(1)}%
+                                ${metrics.profit.trend !== undefined ? (metrics.profit.trend >= 0 ? '↑' : '↓') : '—'} ${metrics.profit.trend !== undefined ? Math.abs(metrics.profit.trend).toFixed(1) : ''}%
                             </div>
-                            <div class="data-source">
-                                财务系统
-                                <a href="/api/finance" target="_blank" class="verify-link">🔗 验证</a>
-                            </div>
+                            <div class="data-source">财务系统 <a href="/api/finance" target="_blank" class="verify-link">🔗 验证</a></div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-icon">📈</div>
-                            <div class="metric-value">${metrics.roas.value}</div>
+                            <div class="metric-value">${metrics.roas.value !== undefined ? metrics.roas.value : '—'}</div>
                             <div class="metric-label">ROAS</div>
                             <div class="metric-trend ${metrics.roas.trend >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${metrics.roas.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.roas.trend).toFixed(1)}
+                                ${metrics.roas.trend !== undefined ? (metrics.roas.trend >= 0 ? '↑' : '↓') : '—'} ${metrics.roas.trend !== undefined ? Math.abs(metrics.roas.trend).toFixed(1) : ''}
                             </div>
-                            <div class="data-source">
-                                Meta Ads
-                                <a href="https://www.facebook.com/adsmanager" target="_blank" class="verify-link">🔗 验证</a>
-                            </div>
+                            <div class="data-source">Meta Ads <a href="https://www.facebook.com/adsmanager" target="_blank" class="verify-link">🔗 验证</a></div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-icon">⭐</div>
-                            <div class="metric-value">${metrics.rating.value}%</div>
+                            <div class="metric-value">${metrics.rating.value !== undefined ? metrics.rating.value + '%' : '—'}</div>
                             <div class="metric-label">好评率</div>
                             <div class="metric-trend ${metrics.rating.trend >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${metrics.rating.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.rating.trend).toFixed(0)}%
+                                ${metrics.rating.trend !== undefined ? (metrics.rating.trend >= 0 ? '↑' : '↓') : '—'} ${metrics.rating.trend !== undefined ? Math.abs(metrics.rating.trend).toFixed(0) : ''}%
                             </div>
-                            <div class="data-source">
-                                电商平台
-                                <a href="/api/reviews" target="_blank" class="verify-link">🔗 验证</a>
-                            </div>
+                            <div class="data-source">电商平台 <a href="/api/reviews" target="_blank" class="verify-link">🔗 验证</a></div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-icon">🚚</div>
-                            <div class="metric-value">${metrics.shipped.value}</div>
+                            <div class="metric-value">${metrics.shipped.value !== undefined ? metrics.shipped.value : '—'}</div>
                             <div class="metric-label">发货</div>
                             <div class="metric-trend ${metrics.shipped.trend >= 0 ? 'trend-up' : 'trend-down'}">
-                                ${metrics.shipped.trend >= 0 ? '↑' : '↓'} ${Math.abs(metrics.shipped.trend).toFixed(0)}
+                                ${metrics.shipped.trend !== undefined ? (metrics.shipped.trend >= 0 ? '↑' : '↓') : '—'} ${metrics.shipped.trend !== undefined ? Math.abs(metrics.shipped.trend).toFixed(0) : ''}
                             </div>
-                            <div class="data-source">
-                                物流系统
-                                <a href="/api/shipping" target="_blank" class="verify-link">🔗 验证</a>
-                            </div>
+                            <div class="data-source">物流系统 <a href="/api/shipping" target="_blank" class="verify-link">🔗 验证</a></div>
                         </div>
                     `;
+                } else {
+                    document.getElementById('metricsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;text-align:center;color:#999;padding:40px;">暂无实时数据 —</div>';
                 }
             } catch (error) {
                 console.error('加载指标失败:', error);
+                document.getElementById('metricsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;text-align:center;color:#999;padding:40px;">数据加载失败 —</div>';
             }
         }
 
-        // 加载 Agent 状态 - 支持 10 人完整团队
+        // 加载 Agent 状态 - 真实数据，无数据显示"—"
         async function loadAgents() {
             try {
                 const res = await fetch(`${API_BASE}/agents/status`);
                 const data = await res.json();
                 
-                if (data.success) {
+                if (data.success && data.data.agents && data.data.agents.length > 0) {
                     const list = document.getElementById('agentList');
                     list.innerHTML = data.data.agents.map(agent => `
                         <div class="agent-item" onclick="viewAgentDetails('${agent.name}', '${agent.role}')" style="cursor:pointer;" title="点击查看详情">
                             <div class="agent-info">
                                 <div class="agent-status status-${agent.status}"></div>
                                 <div>
-                                    <div class="agent-name">${agent.name} <span style="font-size:11px;color:#999;">· ${agent.role || ''}</span></div>
-                                    <div class="agent-task">${agent.task}</div>
+                                    <div class="agent-name">${agent.name} <span style="font-size:11px;color:#999;">· ${agent.role || '—'}</span></div>
+                                    <div class="agent-task">${agent.task || '—'}</div>
                                 </div>
                             </div>
-                            <div>${agent.status === 'running' ? '🟢 运行中' : agent.status === 'processing' ? '🟡 处理中' : '🔴 异常'}</div>
+                            <div>${agent.status === 'running' ? '🟢 运行中' : agent.status === 'processing' ? '🟡 处理中' : '⚪ 离线'}</div>
                         </div>
                     `).join('');
+                } else {
+                    document.getElementById('agentList').innerHTML = '<div style="text-align:center;color:#999;padding:20px;">暂无实时数据 —</div>';
                 }
             } catch (error) {
                 console.error('加载 Agent 状态失败:', error);
+                document.getElementById('agentList').innerHTML = '<div style="text-align:center;color:#999;padding:20px;">数据加载失败 —</div>';
             }
         }
 
