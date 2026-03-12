@@ -141,7 +141,7 @@
         <div class="card" style="margin-top: 20px;">
             <div class="section-header">
                 <div class="section-title">🔐 系统安全监控</div>
-                <div class="last-update">安全运维 Agent · 实时更新</div>
+                <div class="last-update">小安 · 安全运维 · 实时更新</div>
             </div>
             <div class="two-column">
                 <div>
@@ -267,12 +267,7 @@
                 const res = await fetch(`${API_BASE}/agents/status`);
                 const data = await res.json();
                 if (data.success) {
-                    // 添加安全运维 Agent
-                    const allAgents = [
-                        ...data.data.agents,
-                        { name: '安全运维 Agent', status: 'running', task: '系统监控 · 安全防护 · 无异常', exceptions: 0 }
-                    ];
-                    document.getElementById('agentList').innerHTML = allAgents.map(agent => `
+                    document.getElementById('agentList').innerHTML = data.data.agents.map(agent => `
                         <div class="agent-item">
                             <div class="agent-info">
                                 <div class="agent-status status-${agent.status === 'running' ? 'running' : 'processing'}"></div>
