@@ -145,7 +145,7 @@ const initTeamData = () => {
 };
 
 initTeamData();
-console.log('📊 Dashboard 后端服务启动 - 真实数据模式');
+console.log('📊 Dashboard 后端服务启动 - 真实数据模式（无模拟数据）');
 
 // JWT 认证中间件
 const authenticateToken = (req, res, next) => {
