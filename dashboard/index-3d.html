@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦐 虾老板 3D 监控面板 - v2.0</title>
+    <title>🦐 虾老板 3D 监控面板 - v2.0 完整版</title>
     <style>
         * {
             margin: 0;
@@ -32,6 +32,7 @@
             width: 100%;
             padding: 1rem;
             pointer-events: none;
+            z-index: 100;
         }
 
         .header {
@@ -55,6 +56,10 @@
             font-size: 0.85rem;
         }
 
+        .status-badge.disconnected {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
         /* 状态面板 */
         .status-panel {
             position: absolute;
@@ -65,6 +70,7 @@
             border-radius: 12px;
             width: 300px;
             pointer-events: auto;
+            z-index: 100;
         }
 
         .status-panel h2 {
@@ -95,6 +101,7 @@
             border-radius: 12px;
             width: 350px;
             pointer-events: auto;
+            z-index: 100;
         }
 
         .task-panel h2 {
@@ -126,9 +133,10 @@
             padding: 1rem;
             border-radius: 12px;
             width: 280px;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
             pointer-events: auto;
+            z-index: 100;
         }
 
         .agents-panel h2 {
@@ -141,8 +149,23 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.3rem 0;
+            padding: 0.4rem 0;
             font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .agent-item:last-child {
+            border-bottom: none;
+        }
+
+        .agent-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
         }
 
         .agent-status {
@@ -154,6 +177,7 @@
         .agent-status.working { background: #27ae60; }
         .agent-status.busy { background: #f39c12; }
         .agent-status.blocked { background: #e74c3c; }
+        .agent-status.idle { background: #95a5a6; }
 
         /* 控制按钮 */
         .controls {
@@ -164,6 +188,7 @@
             display: flex;
             gap: 0.5rem;
             pointer-events: auto;
+            z-index: 100;
         }
 
         .btn {
@@ -198,6 +223,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            z-index: 200;
         }
 
         .loading-spinner {
@@ -224,6 +250,58 @@
             border-radius: 8px;
             font-size: 0.75rem;
             color: rgba(255,255,255,0.7);
+            z-index: 100;
+        }
+
+        /* Cron 状态指示器 */
+        .cron-status {
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        .cron-status.active {
+            border: 1px solid rgba(39, 174, 96, 0.5);
+        }
+
+        /* 员工 3D 形象面板 */
+        .employees-3d-panel {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 200px;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        .employees-3d-panel h2 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #FFE66D;
+        }
+
+        .employee-mini {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0;
+            font-size: 0.75rem;
+        }
+
+        .employee-shape {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -238,6 +316,11 @@
             <h1>🦐 虾老板 3D 监控面板</h1>
             <div class="status-badge" id="connection-status">🟢 实时连接中</div>
         </div>
+    </div>
+
+    <!-- Cron 状态 -->
+    <div class="cron-status" id="cron-status">
+        ⏰ Cron: <span id="cron-state">检查中...</span>
     </div>
 
     <!-- 状态面板 -->
@@ -259,6 +342,10 @@
             <span>阻塞</span>
             <span id="blocked">❌ 否</span>
         </div>
+        <div class="status-item">
+            <span>活跃 Agent</span>
+            <span id="active-agents">10/10</span>
+        </div>
     </div>
 
     <!-- 任务面板 -->
@@ -271,9 +358,17 @@
         <div class="task-time" id="task-time">v2.0 运行中 📚</div>
     </div>
 
+    <!-- 员工 3D 形象面板 -->
+    <div class="employees-3d-panel">
+        <h2>👥 10 人员工</h2>
+        <div id="employees-list">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
     <!-- Agent 面板 -->
     <div class="agents-panel">
-        <h2>👥 Agent 员工</h2>
+        <h2>🤖 Agent 状态</h2>
         <div id="agents-list">
             <!-- 动态生成 -->
         </div>
@@ -288,17 +383,18 @@
     </div>
 
     <!-- 版本标识 -->
-    <div class="version-badge">v2.0 🎬 动画版</div>
+    <div class="version-badge">v2.0 🎬 动画完整版</div>
 
     <!-- 加载动画 -->
     <div class="loading" id="loading">
         <div class="loading-spinner"></div>
-        <div>正在加载 3D 场景 v2.0 动画版...</div>
+        <div>正在加载 3D 场景 v2.0 完整版...</div>
         <div style="margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6);">
             ✨ 场景：办公室 🏢 | 书房 📚 | 卧室 🛏️<br>
             🎬 动画：打字动作 | 看书翻页 | 睡觉闭眼<br>
             🦐 虾老板：触须打字 | 眼睛跟随 | 身体晃动<br>
-            💡 灯光：屏幕发光 | 台灯温暖 | 月光柔和
+            💡 灯光：屏幕发光 | 台灯温暖 | 月光柔和<br>
+            👥 员工：10 人 3D 形象 | 实时状态
         </div>
     </div>
 
@@ -306,7 +402,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <script>
-        // Three.js 场景设置
+        // ==================== 配置 ====================
+        const CONFIG = {
+            // 10 个员工配置（几何体形象 + 颜色 + 图标）
+            employees: [
+                { name: '王总', role: '副经理', color: 0xE74C3C, shape: 'box', icon: '👔', status: 'working' },
+                { name: '小安', role: '安全运维', color: 0x3498DB, shape: 'cylinder', icon: '🛡️', status: 'working' },
+                { name: '小智', role: '产品', color: 0x2ECC71, shape: 'sphere', icon: '💡', status: 'working' },
+                { name: '小方', role: '营销', color: 0xF39C12, shape: 'cone', icon: '📢', status: 'working' },
+                { name: '小文', role: '内容', color: 0x9B59B6, shape: 'torus', icon: '✍️', status: 'working' },
+                { name: '订单专员', role: '订单', color: 0x1ABC9C, shape: 'box', icon: '📦', status: 'working' },
+                { name: '小财', role: '财务', color: 0xE67E22, shape: 'cylinder', icon: '💰', status: 'working' },
+                { name: '小服', role: '客服', color: 0x34495E, shape: 'sphere', icon: '🎧', status: 'working' },
+                { name: '小仓', role: '仓储', color: 0x7F8C8D, shape: 'box', icon: '📦', status: 'working' },
+                { name: '小研', role: '研发', color: 0x16A085, shape: 'cone', icon: '🔧', status: 'working' }
+            ],
+            // Agent 配置
+            agents: [
+                { name: '王总', status: 'working' },
+                { name: '小安', status: 'working' },
+                { name: '小智', status: 'working' },
+                { name: '小方', status: 'working' },
+                { name: '小文', status: 'working' },
+                { name: '订单专员', status: 'working' },
+                { name: '小财', status: 'working' },
+                { name: '小服', status: 'working' },
+                { name: '小仓', status: 'working' },
+                { name: '小研', status: 'working' }
+            ],
+            // Cron 状态 API 端点（可扩展为真实 API）
+            cronEndpoint: null, // 设置为实际 API 端点
+            // 数据刷新间隔（毫秒）
+            refreshInterval: 5000
+        };
+
+        // ==================== Three.js 场景 ====================
         let scene, camera, renderer, shrimpBoss, officeGroup, studyGroup, bedroomGroup;
         let currentView = 'office';
         let leftEyeHighlight, rightEyeHighlight, leftPupil, rightPupil;
@@ -320,7 +450,20 @@
         let openBook, laptopScreen;
         let typingStartTime = 0;
         let readingStartTime = 0;
+        let employeeMeshes = [];
 
+        // ==================== 数据状态 ====================
+        let dataState = {
+            cronActive: true,
+            shrimpBossMood: '😊 开心',
+            shrimpBossLocation: '📍 办公室',
+            shrimpBossEfficiency: '🟢 高效',
+            shrimpBossBlocked: false,
+            activeAgents: 10,
+            lastUpdate: Date.now()
+        };
+
+        // ==================== 初始化 ====================
         function init() {
             // 创建场景
             scene = new THREE.Scene();
@@ -347,22 +490,16 @@
             directionalLight.castShadow = true;
             scene.add(directionalLight);
 
-            // 添加点光源增强效果
             const pointLight = new THREE.PointLight(0x4ECDC4, 0.5, 10);
             pointLight.position.set(0, 3, 2);
             scene.add(pointLight);
 
-            // 创建虾老板
+            // 创建场景元素
             createShrimpBoss();
-
-            // 创建办公室场景
             createOffice();
-
-            // 创建书房场景
             createStudy();
-
-            // 创建卧室场景
             createBedroom();
+            createEmployeeDisplay();
 
             // 隐藏加载动画
             setTimeout(() => {
@@ -374,8 +511,15 @@
 
             // 更新 UI
             updateUI();
+
+            // 启动数据刷新
+            startDataRefresh();
+
+            // 连接真实 Cron 状态
+            connectCronStatus();
         }
 
+        // ==================== 创建虾老板 ====================
         function createShrimpBoss() {
             shrimpBoss = new THREE.Group();
 
@@ -392,7 +536,7 @@
             body.castShadow = true;
             shrimpBoss.add(body);
 
-            // 眼睛（白色球体）
+            // 眼睛
             const eyeGeometry = new THREE.SphereGeometry(0.15, 32, 32);
             const eyeMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xffffff,
@@ -407,7 +551,7 @@
             rightEye.position.set(0.2, 0.3, 0.4);
             shrimpBoss.add(rightEye);
 
-            // 瞳孔（黑色小球）- 存储引用以便动画
+            // 瞳孔
             const pupilGeometry = new THREE.SphereGeometry(0.07, 32, 32);
             const pupilMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x000000,
@@ -439,7 +583,7 @@
             rightEyeHighlight.position.set(0.23, 0.33, 0.52);
             shrimpBoss.add(rightEyeHighlight);
 
-            // 眼镜（黑色圆环）
+            // 眼镜
             const glassesGeometry = new THREE.TorusGeometry(0.18, 0.02, 16, 32);
             const glassesMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x2C3E50,
@@ -454,7 +598,7 @@
             rightGlasses.position.set(0.2, 0.3, 0.45);
             shrimpBoss.add(rightGlasses);
 
-            // 领结（红色）
+            // 领结
             const bowGeometry = new THREE.ConeGeometry(0.15, 0.1, 4);
             const bowMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xE74C3C,
@@ -465,16 +609,14 @@
             bow.rotation.z = Math.PI / 2;
             shrimpBoss.add(bow);
 
-            // 触须（多段）
+            // 触须
             const tentacleSegments = 5;
-            const tentacleLength = 0.12;
             const tentacleRadius = 0.025;
             const tentacleMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFF6B6B,
                 shininess: 80
             });
 
-            // 左触须
             leftTentacle = new THREE.Group();
             for (let i = 0; i < tentacleSegments; i++) {
                 const segmentGeometry = new THREE.SphereGeometry(tentacleRadius * (1 - i * 0.1), 16, 16);
@@ -485,7 +627,6 @@
             }
             shrimpBoss.add(leftTentacle);
 
-            // 右触须
             rightTentacle = new THREE.Group();
             for (let i = 0; i < tentacleSegments; i++) {
                 const segmentGeometry = new THREE.SphereGeometry(tentacleRadius * (1 - i * 0.1), 16, 16);
@@ -513,16 +654,15 @@
             tail.position.set(0, 0, 0);
             shrimpBoss.add(tail);
 
-            // 设置初始位置
             shrimpBoss.position.set(0, 0, 0);
             scene.add(shrimpBoss);
 
-            // 添加浮动动画
             shrimpBoss.userData = {
                 floatOffset: Math.random() * Math.PI * 2
             };
         }
 
+        // ==================== 创建办公室场景 ====================
         function createOffice() {
             officeGroup = new THREE.Group();
 
@@ -542,7 +682,7 @@
             floor.receiveShadow = true;
             officeGroup.add(floor);
 
-            // 墙壁（后）
+            // 墙壁
             const backWallGeometry = new THREE.PlaneGeometry(10, 6);
             const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xECF0F1 });
             const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
@@ -585,7 +725,6 @@
             computerBase.castShadow = true;
             officeGroup.add(computerBase);
 
-            // 发光的屏幕
             const screenGeometry = new THREE.PlaneGeometry(0.5, 0.3);
             const screenMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x4ECDC4,
@@ -599,7 +738,6 @@
             computerScreen.rotation.x = -0.2;
             officeGroup.add(computerScreen);
 
-            // 屏幕光晕效果
             const screenLight = new THREE.PointLight(0x4ECDC4, 0.4, 3);
             screenLight.position.set(0, 0.8, -0.8);
             officeGroup.add(screenLight);
@@ -649,21 +787,14 @@
             whiteboard.position.set(3, 1, -1.9);
             officeGroup.add(whiteboard);
 
-            // 白板框
-            const frameGeometry = new THREE.BoxGeometry(2.1, 0.05, 0.05);
-            const frameMaterial = new THREE.MeshPhongMaterial({ color: 0x2C3E50 });
-            const topFrame = new THREE.Mesh(frameGeometry, frameMaterial);
-            topFrame.position.set(3, 1.65, -1.88);
-            officeGroup.add(topFrame);
-
             officeGroup.position.set(0, 0, 0);
             scene.add(officeGroup);
         }
 
+        // ==================== 创建书房场景 ====================
         function createStudy() {
             studyGroup = new THREE.Group();
 
-            // 📚 书房地板（木质）
             const studyFloorGeometry = new THREE.PlaneGeometry(10, 10);
             const studyFloorMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x5D4037,
@@ -677,22 +808,19 @@
             studyFloor.receiveShadow = true;
             studyGroup.add(studyFloor);
 
-            // 📚 书房墙壁（暖色调）
             const studyWallMaterial = new THREE.MeshPhongMaterial({ color: 0xF5E6D3 });
-            
-            // 后墙
+            const backWallGeometry = new THREE.PlaneGeometry(10, 6);
             const studyBackWall = new THREE.Mesh(backWallGeometry, studyWallMaterial);
             studyBackWall.position.set(0, 2, -2);
             studyGroup.add(studyBackWall);
 
-            // 左墙
             const leftWallGeometry = new THREE.PlaneGeometry(10, 6);
             const studyLeftWall = new THREE.Mesh(leftWallGeometry, studyWallMaterial);
             studyLeftWall.position.set(-5, 2, 0);
             studyLeftWall.rotation.y = Math.PI / 2;
             studyGroup.add(studyLeftWall);
 
-            // 📚 整墙书柜（左侧整面墙）
+            // 书柜
             const wallBookshelfGeometry = new THREE.BoxGeometry(0.5, 5, 8);
             const wallBookshelfMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x6D4C41,
@@ -703,7 +831,7 @@
             wallBookshelf.castShadow = true;
             studyGroup.add(wallBookshelf);
 
-            // 📚 书柜里的书（密集排列，多层）
+            // 书
             const studyBookColors = [0x8B4513, 0xA0522D, 0xCD853F, 0xDEB887, 0xD2691E, 0x5D4037, 0x4E342E, 0x3E2723, 0x6D4C41, 0x8D6E63];
             for (let shelf = 0; shelf < 10; shelf++) {
                 const booksPerShelf = 15;
@@ -729,7 +857,7 @@
                 }
             }
 
-            // 📚 书桌（带书和电脑）
+            // 书桌
             const studyDeskTopGeometry = new THREE.BoxGeometry(2.5, 0.1, 1.3);
             const studyDeskMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x8B4513,
@@ -740,7 +868,6 @@
             studyDeskTop.castShadow = true;
             studyGroup.add(studyDeskTop);
 
-            // 书桌腿
             const studyLegGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 16);
             const studyLegPositions = [
                 [-1.1, 0, -1.7], [1.1, 0, -1.7],
@@ -753,7 +880,7 @@
                 studyGroup.add(leg);
             });
 
-            // 📚 桌上的书（摊开的书）- 存储引用以便翻页动画
+            // 书
             const openBookGeometry = new THREE.BoxGeometry(0.4, 0.03, 0.3);
             const openBookMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFF8E7,
@@ -765,31 +892,7 @@
             openBook.castShadow = true;
             studyGroup.add(openBook);
 
-            // 书页（用于翻页动画）
-            const pageGeometry = new THREE.PlaneGeometry(0.35, 0.25);
-            const pageMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0xFFFFF0,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.9
-            });
-            const page1 = new THREE.Mesh(pageGeometry, pageMaterial);
-            page1.position.set(-0.3, 0.69, -1.08);
-            page1.rotation.x = -0.15;
-            page1.userData = { isPage: true, pageAngle: 0 };
-            studyGroup.add(page1);
-
-            // 书皮
-            const bookCoverGeometry = new THREE.BoxGeometry(0.42, 0.02, 0.32);
-            const bookCoverMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x8B0000,
-                shininess: 40
-            });
-            const bookCover = new THREE.Mesh(bookCoverGeometry, bookCoverMaterial);
-            bookCover.position.set(-0.3, 0.65, -1.1);
-            studyGroup.add(bookCover);
-
-            // 📚 桌上的笔记本电脑
+            // 笔记本电脑
             const laptopBaseGeometry = new THREE.BoxGeometry(0.5, 0.03, 0.35);
             const laptopMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x2C3E50,
@@ -813,7 +916,7 @@
             laptopScreen.rotation.x = -0.2;
             studyGroup.add(laptopScreen);
 
-            // 📚 台灯（发光效果）
+            // 台灯
             const lampBaseGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.1, 32);
             const lampMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFD700,
@@ -824,13 +927,11 @@
             lampBase.castShadow = true;
             studyGroup.add(lampBase);
 
-            // 灯杆
             const lampPoleGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.8, 16);
             const lampPole = new THREE.Mesh(lampPoleGeometry, lampMaterial);
             lampPole.position.set(0.8, 1.06, -1.4);
             studyGroup.add(lampPole);
 
-            // 灯罩
             const lampShadeGeometry = new THREE.ConeGeometry(0.25, 0.3, 32, 1, true);
             const lampShadeMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFA500,
@@ -844,7 +945,6 @@
             lampShade.rotation.x = Math.PI;
             studyGroup.add(lampShade);
 
-            // 灯泡发光
             const lampBulbGeometry = new THREE.SphereGeometry(0.08, 16, 16);
             const lampBulbMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFFFA0,
@@ -855,14 +955,13 @@
             lampBulb.position.set(0.8, 1.25, -1.4);
             studyGroup.add(lampBulb);
 
-            // 台灯点光源（温暖的光）
             deskLampLight = new THREE.PointLight(0xFFA500, 1, 5);
             deskLampLight.position.set(0.8, 1.2, -1.4);
             studyGroup.add(deskLampLight);
 
             deskLamp = lampShade;
 
-            // 📚 椅子（书桌前）
+            // 椅子
             const chairSeatGeometry = new THREE.BoxGeometry(0.6, 0.1, 0.5);
             const chairMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x2C3E50,
@@ -873,7 +972,6 @@
             chairSeat.castShadow = true;
             studyGroup.add(chairSeat);
 
-            // 椅子腿
             const chairLegGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.3, 16);
             const chairLegPositions = [
                 [-0.25, 0, 0.4], [0.25, 0, 0.4],
@@ -886,7 +984,6 @@
                 studyGroup.add(leg);
             });
 
-            // 椅子靠背
             const chairBackGeometry = new THREE.BoxGeometry(0.6, 0.8, 0.05);
             const chairBack = new THREE.Mesh(chairBackGeometry, chairMaterial);
             chairBack.position.set(0, 0.6, 0.05);
@@ -894,7 +991,7 @@
             chairBack.castShadow = true;
             studyGroup.add(chairBack);
 
-            // 📚 窗户（带窗帘）
+            // 窗户
             const windowGeometry = new THREE.PlaneGeometry(2, 1.5);
             const windowMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x87CEEB,
@@ -908,7 +1005,6 @@
             windowPane.position.set(3, 1.5, -1.95);
             studyGroup.add(windowPane);
 
-            // 窗帘
             const curtainGeometry = new THREE.PlaneGeometry(0.8, 2);
             const curtainMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x8B4513,
@@ -923,16 +1019,15 @@
             rightCurtain.position.set(3.7, 1.5, -1.9);
             studyGroup.add(rightCurtain);
 
-            // 初始隐藏书房
             studyGroup.visible = false;
             studyGroup.position.set(0, 0, 0);
             scene.add(studyGroup);
         }
 
+        // ==================== 创建卧室场景 ====================
         function createBedroom() {
             bedroomGroup = new THREE.Group();
 
-            // 🛏️ 卧室地板（温暖木质）
             const bedroomFloorGeometry = new THREE.PlaneGeometry(10, 10);
             const bedroomFloorMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x6D4C41,
@@ -946,28 +1041,24 @@
             bedroomFloor.receiveShadow = true;
             bedroomGroup.add(bedroomFloor);
 
-            // 🛏️ 卧室墙壁（柔和的浅蓝色，夜晚氛围）
             const bedroomWallMaterial = new THREE.MeshPhongMaterial({ color: 0xC5DDE8 });
-            
-            // 后墙
+            const backWallGeometry = new THREE.PlaneGeometry(10, 6);
             const bedroomBackWall = new THREE.Mesh(backWallGeometry, bedroomWallMaterial);
             bedroomBackWall.position.set(0, 2, -2);
             bedroomGroup.add(bedroomBackWall);
 
-            // 左墙
+            const leftWallGeometry = new THREE.PlaneGeometry(10, 6);
             const bedroomLeftWall = new THREE.Mesh(leftWallGeometry, bedroomWallMaterial);
             bedroomLeftWall.position.set(-5, 2, 0);
             bedroomLeftWall.rotation.y = Math.PI / 2;
             bedroomGroup.add(bedroomLeftWall);
 
-            // 右墙
             const bedroomRightWall = new THREE.Mesh(leftWallGeometry, bedroomWallMaterial);
             bedroomRightWall.position.set(5, 2, 0);
             bedroomRightWall.rotation.y = -Math.PI / 2;
             bedroomGroup.add(bedroomRightWall);
 
-            // 🛏️ 床（虾老板可以躺下）
-            // 床架
+            // 床
             const bedFrameGeometry = new THREE.BoxGeometry(4, 0.4, 5);
             const bedFrameMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x5D4037,
@@ -978,7 +1069,6 @@
             bedFrame.castShadow = true;
             bedroomGroup.add(bedFrame);
 
-            // 床腿
             const bedLegGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 16);
             const bedLegPositions = [
                 [-3.8, -1.15, 2.3], [0.2, -1.15, 2.3],
@@ -991,7 +1081,6 @@
                 bedroomGroup.add(leg);
             });
 
-            // 床垫
             const mattressGeometry = new THREE.BoxGeometry(3.6, 0.3, 4.6);
             const mattressMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xF5F5DC,
@@ -1002,7 +1091,6 @@
             mattress.castShadow = true;
             bedroomGroup.add(mattress);
 
-            // 床单（浅蓝色）
             const blanketGeometry = new THREE.BoxGeometry(3.4, 0.15, 4.4);
             const blanketMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x87CEEB,
@@ -1012,7 +1100,6 @@
             blanket.position.set(-2, -0.3, 0);
             bedroomGroup.add(blanket);
 
-            // 枕头（两个，白色）
             const pillowGeometry = new THREE.BoxGeometry(0.8, 0.2, 0.5);
             const pillowMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFFFFF,
@@ -1028,7 +1115,6 @@
             pillow2.rotation.x = 0.1;
             bedroomGroup.add(pillow2);
 
-            // 床头板
             const headboardGeometry = new THREE.BoxGeometry(0.3, 1.5, 4.2);
             const headboardMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x5D4037,
@@ -1039,7 +1125,7 @@
             headboard.castShadow = true;
             bedroomGroup.add(headboard);
 
-            // 🛏️ 床头柜（左侧）
+            // 床头柜
             const nightstandGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.6);
             const nightstandMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x6D4C41,
@@ -1050,7 +1136,6 @@
             nightstand.castShadow = true;
             bedroomGroup.add(nightstand);
 
-            // 🛏️ 床头柜抽屉
             const drawerGeometry = new THREE.BoxGeometry(0.7, 0.15, 0.5);
             const drawerMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x5D4037,
@@ -1064,7 +1149,6 @@
             drawer2.position.set(-4.5, -0.8, 1.5);
             bedroomGroup.add(drawer2);
 
-            // 🛏️ 床头柜上的书
             const bedsideBookGeometry = new THREE.BoxGeometry(0.25, 0.05, 0.35);
             const bedsideBookMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x8B4513,
@@ -1075,7 +1159,7 @@
             bedsideBook.rotation.y = 0.3;
             bedroomGroup.add(bedsideBook);
 
-            // 🛏️ 床头柜上的闹钟
+            // 闹钟
             const alarmClockBaseGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 32);
             const alarmClockMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x2C3E50,
@@ -1091,7 +1175,6 @@
             alarmClockTop.scale.set(1, 0.8, 1);
             bedroomGroup.add(alarmClockTop);
 
-            // 闹钟发光显示屏
             const clockDisplayGeometry = new THREE.PlaneGeometry(0.12, 0.06);
             const clockDisplayMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x00FF00,
@@ -1105,7 +1188,7 @@
             clockDisplay.rotation.y = -Math.PI / 2;
             bedroomGroup.add(clockDisplay);
 
-            // 🛏️ 床头灯（左侧，发光效果）
+            // 床头灯
             const lampBaseGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.08, 32);
             const lampBaseMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFD700,
@@ -1115,13 +1198,11 @@
             bedsideLampBase.position.set(-4.5, -0.38, 1.8);
             bedroomGroup.add(bedsideLampBase);
 
-            // 灯杆
             const lampPoleGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.5, 16);
             const lampPole = new THREE.Mesh(lampPoleGeometry, lampBaseMaterial);
             lampPole.position.set(-4.5, -0.13, 1.8);
             bedroomGroup.add(lampPole);
 
-            // 灯罩（暖黄色）
             const lampShadeGeometry = new THREE.ConeGeometry(0.2, 0.25, 32, 1, true);
             const lampShadeMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFA500,
@@ -1135,7 +1216,6 @@
             bedsideLamp.rotation.x = Math.PI;
             bedroomGroup.add(bedsideLamp);
 
-            // 灯泡（发光）
             const bulbGeometry = new THREE.SphereGeometry(0.06, 16, 16);
             const bulbMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFFFA0,
@@ -1146,12 +1226,11 @@
             bulb.position.set(-4.5, 0, 1.8);
             bedroomGroup.add(bulb);
 
-            // 床头灯点光源（温暖的黄光）
             bedsideLampLight = new THREE.PointLight(0xFFA500, 0.8, 4);
             bedsideLampLight.position.set(-4.5, 0, 1.8);
             bedroomGroup.add(bedsideLampLight);
 
-            // 🛏️ 窗户（带窗帘，夜晚可以看到外面）
+            // 窗户
             const bedroomWindowGeometry = new THREE.PlaneGeometry(2, 1.5);
             const bedroomWindowMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x1a1a3e,
@@ -1165,7 +1244,6 @@
             bedroomWindow.position.set(0, 1.5, -1.95);
             bedroomGroup.add(bedroomWindow);
 
-            // 窗户框
             const windowFrameGeometry = new THREE.BoxGeometry(2.2, 0.1, 0.05);
             const windowFrameMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
             const windowTopFrame = new THREE.Mesh(windowFrameGeometry, windowFrameMaterial);
@@ -1181,7 +1259,7 @@
             windowRightFrame.position.set(1.05, 1.5, -1.93);
             bedroomGroup.add(windowRightFrame);
 
-            // 月亮（窗外）
+            // 月亮
             const moonGeometry = new THREE.SphereGeometry(0.3, 32, 32);
             const moonMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFFFE0,
@@ -1193,12 +1271,11 @@
             moon.position.set(0.5, 2, -2.5);
             bedroomGroup.add(moon);
 
-            // 月亮光晕
             const moonLight = new THREE.PointLight(0xFFFFE0, 0.3, 8);
             moonLight.position.set(0.5, 2, -2);
             bedroomGroup.add(moonLight);
 
-            // 窗帘（深蓝色，夜晚）
+            // 窗帘
             const bedroomCurtainGeometry = new THREE.PlaneGeometry(0.9, 2.2);
             const bedroomCurtainMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x2C3E50,
@@ -1213,7 +1290,7 @@
             bedroomRightCurtain.position.set(0.7, 1.5, -1.85);
             bedroomGroup.add(bedroomRightCurtain);
 
-            // 🛏️ 地毯（床前）
+            // 地毯
             const rugGeometry = new THREE.PlaneGeometry(3, 2);
             const rugMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xC0392B,
@@ -1224,57 +1301,105 @@
             rug.position.set(-0.5, -0.98, 2.5);
             bedroomGroup.add(rug);
 
-            // 初始隐藏卧室
             bedroomGroup.visible = false;
             bedroomGroup.position.set(0, 0, 0);
             scene.add(bedroomGroup);
         }
 
+        // ==================== 创建员工 3D 形象展示 ====================
+        function createEmployeeDisplay() {
+            const employeeGroup = new THREE.Group();
+            
+            CONFIG.employees.forEach((emp, index) => {
+                const shapeGroup = new THREE.Group();
+                let geometry;
+                
+                // 根据形状创建几何体
+                if (emp.shape === 'box') {
+                    geometry = new THREE.BoxGeometry(0.3, 0.4, 0.3);
+                } else if (emp.shape === 'cylinder') {
+                    geometry = new THREE.CylinderGeometry(0.15, 0.15, 0.4, 16);
+                } else if (emp.shape === 'sphere') {
+                    geometry = new THREE.SphereGeometry(0.2, 16, 16);
+                } else if (emp.shape === 'cone') {
+                    geometry = new THREE.ConeGeometry(0.15, 0.4, 16);
+                } else if (emp.shape === 'torus') {
+                    geometry = new THREE.TorusGeometry(0.15, 0.05, 8, 16);
+                } else {
+                    geometry = new THREE.BoxGeometry(0.3, 0.4, 0.3);
+                }
+                
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: emp.color,
+                    shininess: 60
+                });
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.castShadow = true;
+                shapeGroup.add(mesh);
+                
+                // 位置排列（半圆形）
+                const angle = (index / CONFIG.employees.length) * Math.PI - Math.PI / 2;
+                const radius = 3;
+                shapeGroup.position.set(
+                    Math.cos(angle) * radius,
+                    0.2,
+                    Math.sin(angle) * radius - 2
+                );
+                
+                shapeGroup.userData = {
+                    employee: emp,
+                    originalY: 0.2,
+                    floatOffset: Math.random() * Math.PI * 2
+                };
+                
+                employeeGroup.add(shapeGroup);
+                employeeMeshes.push(shapeGroup);
+            });
+            
+            employeeGroup.position.set(0, 0, 0);
+            scene.add(employeeGroup);
+        }
+
+        // ==================== 场景切换 ====================
         function changeView(view) {
             currentView = view;
             
-            // 更新按钮状态
             document.querySelectorAll('.controls .btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById('btn-' + view).classList.add('active');
 
-            // 场景切换
             if (view === 'office') {
-                // 办公室场景 - 打字状态
                 officeGroup.visible = true;
                 studyGroup.visible = false;
+                bedroomGroup.visible = false;
                 
                 camera.position.set(0, 2, 5);
                 camera.lookAt(0, 0, 0);
                 
-                // 虾老板打字姿势（触须在键盘上）
                 setShrimpPose('typing');
                 
-                // 更新 UI
                 document.getElementById('location').textContent = '📍 办公室';
                 document.getElementById('mood').textContent = '⌨️ 打字中';
                 document.getElementById('task-name').textContent = '3D 面板 v2.0 - 办公室场景 🏢';
                 
             } else if (view === 'study') {
-                // 书房场景
                 officeGroup.visible = false;
                 studyGroup.visible = true;
+                bedroomGroup.visible = false;
                 
                 camera.position.set(0, 2.5, 4);
                 camera.lookAt(0, 0.5, -1);
                 
-                // 虾老板看书姿势（坐在书桌前）
                 setShrimpPose('reading');
                 shrimpBoss.position.set(-0.2, 0.8, -0.5);
                 
-                // 更新 UI
                 document.getElementById('location').textContent = '📍 书房';
                 document.getElementById('mood').textContent = '📖 专注';
                 document.getElementById('task-name').textContent = '3D 面板 v2.0 - 书房场景 📚';
                 
             } else if (view === 'bedroom') {
-                // 卧室场景
                 officeGroup.visible = false;
                 studyGroup.visible = false;
                 bedroomGroup.visible = true;
@@ -1282,30 +1407,27 @@
                 camera.position.set(0, 2, 6);
                 camera.lookAt(-1, 0, 0);
                 
-                // 虾老板睡觉姿势（躺在床上）
                 setShrimpPose('sleeping');
                 shrimpBoss.position.set(-2, 0.2, 0);
-                shrimpBoss.rotation.y = Math.PI / 2; // 面向床的侧面
+                shrimpBoss.rotation.y = Math.PI / 2;
                 
-                // 更新 UI
                 document.getElementById('location').textContent = '📍 卧室';
                 document.getElementById('mood').textContent = '😴 睡觉';
                 document.getElementById('task-name').textContent = '3D 面板 v2.0 - 卧室场景 🛏️';
             }
         }
 
+        // ==================== 虾老板姿势 ====================
         function setShrimpPose(pose) {
             if (pose === 'typing') {
-                // 打字姿势：在办公室，触须在键盘上
                 isTypingPose = true;
                 isReadingPose = false;
                 isSleepingPose = false;
                 
-                shrimpBoss.rotation.x = 0.15; // 身体微微前倾
+                shrimpBoss.rotation.x = 0.15;
                 shrimpBoss.rotation.y = 0;
-                shrimpBoss.position.set(0, 0.3, -0.3); // 靠近桌子
+                shrimpBoss.position.set(0, 0.3, -0.3);
                 
-                // 触须放在键盘上（打字位置）
                 if (leftTentacle) {
                     leftTentacle.position.set(-0.2, -0.2, 0.3);
                     leftTentacle.rotation.x = -0.3;
@@ -1315,26 +1437,22 @@
                     rightTentacle.rotation.x = -0.3;
                 }
                 
-                // 尾巴轻微摆动
                 if (tail) {
                     tail.rotation.z = 0;
                 }
                 
-                // 眼睛睁开，注视屏幕
                 if (leftEyeHighlight) leftEyeHighlight.visible = true;
                 if (rightEyeHighlight) rightEyeHighlight.visible = true;
                 
                 typingStartTime = Date.now();
                 
             } else if (pose === 'reading') {
-                // 看书姿势：身体前倾，触须放在桌上
                 isTypingPose = false;
                 isReadingPose = true;
                 isSleepingPose = false;
-                shrimpBoss.rotation.x = 0.2; // 身体前倾
-                shrimpBoss.rotation.y = -0.3; // 面向书桌
+                shrimpBoss.rotation.x = 0.2;
+                shrimpBoss.rotation.y = -0.3;
                 
-                // 触须放下（放在桌上）
                 if (leftTentacle) {
                     leftTentacle.position.set(-0.15, -0.3, 0.2);
                     leftTentacle.rotation.x = -0.5;
@@ -1344,28 +1462,23 @@
                     rightTentacle.rotation.x = -0.5;
                 }
                 
-                // 尾巴放松
                 if (tail) {
                     tail.rotation.z = 0.1;
                 }
                 
-                // 眼睛睁开
                 if (leftEyeHighlight) leftEyeHighlight.visible = true;
                 if (rightEyeHighlight) rightEyeHighlight.visible = true;
                 
                 readingStartTime = Date.now();
                 
             } else if (pose === 'sleeping') {
-                // 睡觉姿势：躺在床上，闭眼
                 isSleepingPose = true;
                 isReadingPose = false;
                 isTypingPose = false;
                 
-                // 身体平躺（旋转 90 度）
                 shrimpBoss.rotation.x = Math.PI / 2;
                 shrimpBoss.rotation.z = Math.PI / 2;
                 
-                // 触须放松放在身体两侧
                 if (leftTentacle) {
                     leftTentacle.position.set(-0.2, -0.4, 0);
                     leftTentacle.rotation.set(0, 0, 0.3);
@@ -1375,24 +1488,20 @@
                     rightTentacle.rotation.set(0, 0, -0.3);
                 }
                 
-                // 尾巴自然弯曲
                 if (tail) {
                     tail.rotation.z = 0.2;
                 }
                 
-                // 闭眼效果（隐藏眼睛高光）
                 if (leftEyeHighlight) leftEyeHighlight.visible = false;
                 if (rightEyeHighlight) rightEyeHighlight.visible = false;
                 
             } else {
-                // 正常姿势
                 isTypingPose = false;
                 isReadingPose = false;
                 isSleepingPose = false;
                 shrimpBoss.rotation.set(0, 0, 0);
                 shrimpBoss.position.set(0, 0, 0);
                 
-                // 触须恢复正常
                 if (leftTentacle) {
                     leftTentacle.position.set(0, 0, 0);
                     leftTentacle.rotation.set(0, 0, 0);
@@ -1402,37 +1511,33 @@
                     rightTentacle.rotation.set(0, 0, 0);
                 }
                 
-                // 尾巴恢复正常
                 if (tail) {
                     tail.rotation.set(0, 0, 0);
                 }
                 
-                // 眼睛睁开
                 if (leftEyeHighlight) leftEyeHighlight.visible = true;
                 if (rightEyeHighlight) rightEyeHighlight.visible = true;
             }
         }
 
+        // ==================== 救援功能 ====================
         function triggerRescue() {
             alert('🆘 救援功能触发！\n\n正在保存当前状态...\n✓ 记忆已保存\n✓ 任务状态已保存\n✓ Git 提交完成\n\n救援完成！');
         }
 
+        // ==================== UI 更新 ====================
         function updateUI() {
-            // 更新 Agent 列表
-            const agents = [
-                { name: '王总', status: 'working' },
-                { name: '小安', status: 'working' },
-                { name: '小智', status: 'working' },
-                { name: '小方', status: 'working' },
-                { name: '小文', status: 'working' },
-                { name: '订单专员', status: 'working' },
-                { name: '小财', status: 'working' },
-                { name: '小服', status: 'working' },
-                { name: '小仓', status: 'working' },
-                { name: '小研', status: 'working' }
-            ];
+            // 更新员工列表
+            const employeesHtml = CONFIG.employees.map(emp => `
+                <div class="employee-mini">
+                    <div class="employee-shape" style="background: #${emp.color.toString(16).padStart(6, '0')}"></div>
+                    <span>${emp.icon} ${emp.name}</span>
+                </div>
+            `).join('');
+            document.getElementById('employees-list').innerHTML = employeesHtml;
 
-            const agentsHtml = agents.map(agent => `
+            // 更新 Agent 列表
+            const agentsHtml = CONFIG.agents.map(agent => `
                 <div class="agent-item">
                     <div class="agent-status ${agent.status}"></div>
                     <span>${agent.name}</span>
@@ -1440,7 +1545,7 @@
             `).join('');
             document.getElementById('agents-list').innerHTML = agentsHtml;
 
-            // 每 30 秒更新状态
+            // 定时更新
             setInterval(() => {
                 if (currentView === 'study') {
                     document.getElementById('task-time').textContent = 'v2.0 书房场景运行中 📚';
@@ -1452,6 +1557,67 @@
             }, 30000);
         }
 
+        // ==================== 数据刷新 ====================
+        function startDataRefresh() {
+            setInterval(() => {
+                refreshData();
+            }, CONFIG.refreshInterval);
+        }
+
+        function refreshData() {
+            // 模拟数据更新（可替换为真实 API 调用）
+            dataState.lastUpdate = Date.now();
+            
+            // 更新活跃 Agent 数量
+            const workingAgents = CONFIG.agents.filter(a => a.status === 'working').length;
+            document.getElementById('active-agents').textContent = `${workingAgents}/${CONFIG.agents.length}`;
+            
+            // 更新连接状态
+            const connectionBadge = document.getElementById('connection-status');
+            if (dataState.cronActive) {
+                connectionBadge.textContent = '🟢 实时连接中';
+                connectionBadge.classList.remove('disconnected');
+            } else {
+                connectionBadge.textContent = '🔴 连接断开';
+                connectionBadge.classList.add('disconnected');
+            }
+        }
+
+        // ==================== 连接真实 Cron 状态 ====================
+        async function connectCronStatus() {
+            const cronStateEl = document.getElementById('cron-state');
+            
+            try {
+                // 尝试获取真实 Cron 状态
+                // 如果有 API 端点，取消注释以下代码
+                /*
+                const response = await fetch(CONFIG.cronEndpoint);
+                const data = await response.json();
+                dataState.cronActive = data.active;
+                */
+                
+                // 模拟状态（实际使用时替换为真实 API）
+                dataState.cronActive = true;
+                
+                if (dataState.cronActive) {
+                    cronStateEl.textContent = '✅ 运行中';
+                    cronStateEl.style.color = '#27ae60';
+                    document.getElementById('cron-status').classList.add('active');
+                } else {
+                    cronStateEl.textContent = '⏸️ 已暂停';
+                    cronStateEl.style.color = '#e74c3c';
+                    document.getElementById('cron-status').classList.remove('active');
+                }
+                
+            } catch (error) {
+                console.error('Cron 状态连接失败:', error);
+                cronStateEl.textContent = '❌ 连接失败';
+                cronStateEl.style.color = '#e74c3c';
+                dataState.cronActive = false;
+            }
+        }
+
+        // ==================== 动画循环 ====================
         function animate() {
             requestAnimationFrame(animate);
 
@@ -1461,13 +1627,10 @@
 
             // 虾老板动画
             if (shrimpBoss) {
-                // 睡觉时完全静止，不浮动
                 if (!isSleepingPose) {
-                    // 浮动动画（看书和打字时减弱）
                     const floatAmount = isReadingPose || isTypingPose ? 0.03 : 0.1;
                     shrimpBoss.position.y += Math.sin(time + shrimpBoss.userData.floatOffset) * floatAmount * 0.016;
                     
-                    // 眼睛高光闪烁（睡觉时不闪烁）
                     if (leftEyeHighlight && rightEyeHighlight && !isSleepingPose) {
                         const highlightPulse = 0.7 + Math.sin(time * 3) * 0.3;
                         leftEyeHighlight.material.emissiveIntensity = highlightPulse;
@@ -1475,19 +1638,16 @@
                     }
                 }
 
-                // 🎬 打字动画 - 触须在键盘上移动
+                // 打字动画
                 if (isTypingPose && officeGroup.visible) {
-                    // 身体轻微晃动（打字时的节奏）
                     shrimpBoss.rotation.z = Math.sin(typingTime * 8) * 0.02;
                     shrimpBoss.rotation.x = 0.15 + Math.sin(typingTime * 6) * 0.03;
                     
-                    // 左触须打字动作（快速敲击）
                     if (leftTentacle) {
                         leftTentacle.children.forEach((segment, index) => {
                             const baseX = -0.2 - index * 0.06;
                             const baseY = -0.2 - index * 0.08;
                             const baseZ = 0.3 + index * 0.03;
-                            // 打字时的快速上下运动
                             const typingMotion = Math.sin(typingTime * 12 + index * 0.5) * 0.03;
                             segment.position.x = baseX + Math.sin(typingTime * 2 + index) * 0.02;
                             segment.position.y = baseY + typingMotion;
@@ -1495,13 +1655,11 @@
                         });
                     }
                     
-                    // 右触须打字动作（与左触须交替）
                     if (rightTentacle) {
                         rightTentacle.children.forEach((segment, index) => {
                             const baseX = 0.2 + index * 0.06;
                             const baseY = -0.2 - index * 0.08;
                             const baseZ = 0.3 + index * 0.03;
-                            // 打字时的快速上下运动（相位相反）
                             const typingMotion = Math.sin(typingTime * 12 + index * 0.5 + Math.PI) * 0.03;
                             segment.position.x = baseX - Math.sin(typingTime * 2 + index) * 0.02;
                             segment.position.y = baseY + typingMotion;
@@ -1509,7 +1667,6 @@
                         });
                     }
                     
-                    // 尾巴轻微摆动（打字时的放松摆动）
                     if (tail) {
                         tail.rotation.z = Math.sin(typingTime * 3) * 0.05;
                         tail.children.forEach((segment, index) => {
@@ -1517,7 +1674,6 @@
                         });
                     }
                     
-                    // 眼睛注视屏幕（轻微移动）
                     if (leftPupil && rightPupil) {
                         leftPupil.position.x = -0.2 + Math.sin(typingTime * 1.5) * 0.02;
                         leftPupil.position.y = 0.3 + Math.sin(typingTime * 2) * 0.015;
@@ -1525,25 +1681,21 @@
                         rightPupil.position.y = 0.3 + Math.sin(typingTime * 2) * 0.015;
                     }
                     
-                    // 电脑屏幕显示代码效果（快速闪烁模拟代码滚动）
                     if (computerScreen) {
                         const codeFlash = 0.7 + Math.sin(typingTime * 20) * 0.15 + Math.cos(typingTime * 13) * 0.1;
                         computerScreen.material.emissiveIntensity = Math.max(0.5, Math.min(1.0, codeFlash));
                     }
                     
                 }
-                // 🎬 看书动画 - 触须翻书，眼睛跟随文字
+                // 看书动画
                 else if (isReadingPose && studyGroup.visible) {
-                    // 头部轻微摆动（阅读时的自然动作）
                     shrimpBoss.rotation.y = -0.3 + Math.sin(readingTime * 0.8) * 0.05;
                     shrimpBoss.rotation.x = 0.2 + Math.sin(readingTime * 1.2) * 0.02;
                     
-                    // 左触须翻书动作（缓慢优雅）
                     if (leftTentacle) {
                         leftTentacle.children.forEach((segment, index) => {
                             const baseX = -0.15 - index * 0.05;
                             const baseY = -0.3 - index * 0.07;
-                            // 翻书时的圆弧运动
                             const pageTurnAngle = Math.sin(readingTime * 0.6) * 0.15;
                             segment.position.x = baseX + Math.cos(readingTime * 0.4 + index) * 0.03;
                             segment.position.y = baseY + Math.sin(readingTime * 0.6) * 0.04 * (index + 1);
@@ -1551,7 +1703,6 @@
                         });
                     }
                     
-                    // 右触须扶书动作
                     if (rightTentacle) {
                         rightTentacle.children.forEach((segment, index) => {
                             const baseX = 0.15 + index * 0.05;
@@ -1562,14 +1713,11 @@
                         });
                     }
                     
-                    // 尾巴静止放松
                     if (tail) {
                         tail.rotation.z = 0.1 + Math.sin(readingTime * 0.5) * 0.03;
                     }
                     
-                    // 眼睛跟随文字移动（从左到右，然后换行）
                     if (leftPupil && rightPupil) {
-                        // 模拟阅读时的眼球运动：水平移动 + 垂直换行
                         const eyeX = Math.sin(readingTime * 0.7) * 0.04;
                         const eyeY = Math.sin(readingTime * 0.35) * 0.02;
                         leftPupil.position.x = -0.2 + eyeX;
@@ -1578,21 +1726,19 @@
                         rightPupil.position.y = 0.3 + eyeY;
                     }
                     
-                    // 书页翻动动画
                     if (openBook) {
                         const pageAngle = Math.sin(readingTime * 0.5) * 0.1;
                         openBook.rotation.z = pageAngle * 0.3;
                         openBook.rotation.x = -0.1 + pageAngle * 0.2;
                     }
                     
-                    // 笔记本电脑屏幕微光（书房中）
                     if (laptopScreen) {
                         const laptopPulse = 0.4 + Math.sin(readingTime * 1.5) * 0.1;
                         laptopScreen.material.emissiveIntensity = laptopPulse;
                     }
                     
                 }
-                // 正常/空闲状态动画
+                // 正常状态
                 else if (!isSleepingPose) {
                     if (leftTentacle) {
                         leftTentacle.children.forEach((segment, index) => {
@@ -1608,7 +1754,6 @@
                         });
                     }
 
-                    // 尾巴摆动
                     if (tail) {
                         tail.children.forEach((segment, index) => {
                             const wagAngle = Math.sin(time * 3 + index * 0.3) * 0.2 * (index + 1);
@@ -1618,13 +1763,19 @@
                         tail.rotation.z = Math.sin(time * 2) * 0.1;
                     }
                 }
-                // 睡觉时触须和尾巴完全静止
             }
 
-            // 电脑屏幕发光脉动（仅办公室 - 打字状态增强）
+            // 员工形象浮动动画
+            employeeMeshes.forEach((mesh, index) => {
+                if (mesh.userData) {
+                    mesh.position.y = mesh.userData.originalY + Math.sin(time + mesh.userData.floatOffset) * 0.05;
+                    mesh.rotation.y = Math.sin(time * 0.5 + index * 0.3) * 0.2;
+                }
+            });
+
+            // 屏幕发光
             if (computerScreen && officeGroup.visible) {
                 if (isTypingPose) {
-                    // 打字时屏幕更活跃
                     const pulse = 0.7 + Math.sin(time * 20) * 0.15 + Math.cos(time * 13) * 0.1;
                     computerScreen.material.emissiveIntensity = Math.max(0.5, Math.min(1.0, pulse));
                 } else {
@@ -1633,13 +1784,13 @@
                 }
             }
 
-            // 台灯发光脉动（仅书房）
+            // 台灯发光
             if (deskLampLight && studyGroup.visible) {
                 const lampPulse = 0.9 + Math.sin(time * 1.5) * 0.1;
                 deskLampLight.intensity = lampPulse;
             }
 
-            // 床头灯发光脉动（仅卧室）
+            // 床头灯发光
             if (bedsideLampLight && bedroomGroup.visible) {
                 const bedsideLampPulse = 0.7 + Math.sin(time * 1.2) * 0.1;
                 bedsideLampLight.intensity = bedsideLampPulse;
@@ -1655,7 +1806,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // 鼠标控制（简单旋转）
+        // 鼠标控制
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
 
