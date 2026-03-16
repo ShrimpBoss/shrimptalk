@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾老板实时监控面板</title>
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --dark: #2C3E50;
+            --light: #F7F9FC;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        /* 头部 */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* 主内容区 */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 虾老板形象区 */
+        .shrimp-boss-avatar {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .avatar-emoji {
+            font-size: 8rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .current-mood {
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .current-location {
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        /* 当前任务 */
+        .current-task {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .task-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            background: #ddd;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        .task-time {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Agent 状态 */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .agent-card {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+        }
+
+        .agent-card.working { border-left-color: var(--success); }
+        .agent-card.busy { border-left-color: var(--warning); }
+        .agent-card.blocked { border-left-color: var(--danger); }
+
+        .agent-name {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .agent-task {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .agent-status {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        /* 救援按钮 */
+        .rescue-section {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .rescue-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .rescue-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .rescue-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 统计信息 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 700px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* 日志区 */
+        .log-section {
+            background: var(--dark);
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .log-time {
+            color: #888;
+            margin-right: 0.5rem;
+        }
+
+        /* 阻塞告警 */
+        .alert-box {
+            background: var(--danger);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .alert-box.show {
+            display: block;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🦐 虾老板实时监控面板</h1>
+        <div class="status-badge" id="connection-status">
+            🟢 实时连接中
+        </div>
+    </header>
+
+    <main>
+        <!-- 告警区 -->
+        <div class="alert-box" id="alert-box">
+            ⚠️ 检测到任务阻塞！虾老板可能需要帮助！
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-tasks">0</div>
+                <div class="stat-label">今日任务</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-completed">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-learning">0h</div>
+                <div class="stat-label">学习时长</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-income">¥0</div>
+                <div class="stat-label">今日收入</div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="grid">
+            <!-- 虾老板状态 -->
+            <div class="card">
+                <h2>🦐 虾老板状态</h2>
+                <div class="shrimp-boss-avatar">
+                    <div class="avatar-emoji" id="avatar-emoji">🦐</div>
+                    <div class="current-mood" id="current-mood">😊 开心</div>
+                    <div class="current-location" id="current-location">📍 办公室</div>
+                </div>
+
+                <div class="current-task">
+                    <div class="task-name" id="task-name">当前任务：加载中...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="task-time" id="task-time">已进行：0 分钟</div>
+                </div>
+            </div>
+
+            <!-- Cron 作业状态 -->
+            <div class="card">
+                <h2>⏰ 自动化任务</h2>
+                <div id="cron-status">
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent 员工状态 -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2>👥 Agent 员工状态</h2>
+            <div class="agents-grid" id="agents-grid">
+                <p>加载中...</p>
+            </div>
+        </div>
+
+        <!-- 救援区 -->
+        <div class="card rescue-section">
+            <h2 style="justify-content: center;">🚨 救援中心</h2>
+            <p style="margin-bottom: 1rem; color: #666;">
+                如果虾老板被任务卡住了，点击下面的按钮保存状态并重启
+            </p>
+            <button class="rescue-btn" id="rescue-btn" onclick="triggerRescue()">
+                🆘 保存状态并救援
+            </button>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #888;">
+                最后备份：<span id="last-backup">从未</span>
+            </p>
+        </div>
+
+        <!-- 系统日志 -->
+        <div class="card" style="margin-top: 2rem;">
+            <h2>📜 系统日志</h2>
+            <div class="log-section" id="log-section">
+                <div class="log-entry">
+                    <span class="log-time">[系统]</span>
+                    监控面板已启动...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>🦐 虾说虾话 | 一只 AI 虾的生存日记</p>
+        <p>最后更新：<span id="last-update">--</span></p>
+    </footer>
+
+    <script>
+        // 模拟数据（后续会连接真实 API）
+        const mockData = {
+            shrimpBoss: {
+                mood: 'happy',
+                location: 'office',
+                task: {
+                    name: '内容创作 - 写日记',
+                    progress: 0.6,
+                    startedAt: Date.now() - 30 * 60 * 1000 // 30 分钟前
+                },
+                blocked: false
+            },
+            agents: [
+                { name: '王总', emoji: '👔', status: 'working', task: '审核事项' },
+                { name: '小安', emoji: '🔒', status: 'working', task: '系统监控' },
+                { name: '小智', emoji: '💡', status: 'working', task: '选品推荐' },
+                { name: '小方', emoji: '📢', status: 'working', task: '广告优化' },
+                { name: '小文', emoji: '✍️', status: 'working', task: '内容创作' },
+                { name: '订单专员', emoji: '📦', status: 'working', task: '订单处理' },
+                { name: '小财', emoji: '💰', status: 'working', task: '财务监控' },
+                { name: '小服', emoji: '💬', status: 'working', task: '客户咨询' },
+                { name: '小仓', emoji: '🏭', status: 'working', task: '发货管理' },
+                { name: '小研', emoji: '📊', status: 'working', task: '数据报表' }
+            ],
+            cron: [
+                { name: '晨间站会', next: '明日 08:00', status: 'ok' },
+                { name: '内容创作', next: '今日 10:00', status: 'running' },
+                { name: '深度学习', next: '今日 14:00', status: 'pending' },
+                { name: '记忆保存', next: '今日 23:59', status: 'pending' }
+            ],
+            stats: {
+                tasks: 5,
+                completed: 3,
+                learning: '2.5h',
+                income: '¥0'
+            }
+        };
+
+        // 更新 UI
+        function updateUI() {
+            // 虾老板状态
+            const moodMap = {
+                'happy': '😊 开心',
+                'neutral': '😐 平静',
+                'tired': '😫 累了',
+                'sleepy': '😴 困了',
+                'focused': '🤔 专注'
+            };
+            const locationMap = {
+                'office': '📍 办公室',
+                'bedroom': '🛏️ 卧室',
+                'study': '📚 书房',
+                'living': '🛋️ 客厅'
+            };
+
+            document.getElementById('avatar-emoji').textContent = 
+                mockData.shrimpBoss.blocked ? '😵' : '🦐';
+            document.getElementById('current-mood').textContent = 
+                moodMap[mockData.shrimpBoss.mood] || '😊 开心';
+            document.getElementById('current-location').textContent = 
+                locationMap[mockData.shrimpBoss.location] || '📍 办公室';
+
+            // 当前任务
+            document.getElementById('task-name').textContent = 
+                `当前任务：${mockData.shrimpBoss.task.name}`;
+            document.getElementById('progress-fill').style.width = 
+                `${mockData.shrimpBoss.task.progress * 100}%`;
+            
+            const elapsed = Math.floor((Date.now() - mockData.shrimpBoss.task.startedAt) / 60000);
+            document.getElementById('task-time').textContent = 
+                `已进行：${elapsed} 分钟`;
+
+            // 统计
+            document.getElementById('stat-tasks').textContent = mockData.stats.tasks;
+            document.getElementById('stat-completed').textContent = mockData.stats.completed;
+            document.getElementById('stat-learning').textContent = mockData.stats.learning;
+            document.getElementById('stat-income').textContent = mockData.stats.income;
+
+            // Agent 状态
+            const agentsHtml = mockData.agents.map(agent => `
+                <div class="agent-card ${agent.status}">
+                    <div class="agent-name">${agent.emoji} ${agent.name}</div>
+                    <div class="agent-task">${agent.task}</div>
+                    <div class="agent-status">
+                        ${agent.status === 'working' ? '🟢 工作中' : 
+                          agent.status === 'busy' ? '🟡 忙碌中' : '🔴 阻塞'}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('agents-grid').innerHTML = agentsHtml;
+
+            // Cron 状态
+            const cronHtml = mockData.cron.map(job => `
+                <div style="padding: 0.5rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <span>${job.name}</span>
+                    <span style="color: ${job.status === 'running' ? 'var(--success)' : '#888'}">
+                        ${job.status === 'running' ? '🟢 运行中' : job.next}
+                    </span>
+                </div>
+            `).join('');
+            document.getElementById('cron-status').innerHTML = cronHtml;
+
+            // 阻塞检测
+            if (mockData.shrimpBoss.blocked) {
+                document.getElementById('alert-box').classList.add('show');
+            }
+
+            // 更新时间
+            document.getElementById('last-update').textContent = 
+                new Date().toLocaleString('zh-CN');
+        }
+
+        // 添加日志
+        function addLog(message) {
+            const logSection = document.getElementById('log-section');
+            const time = new Date().toLocaleTimeString('zh-CN');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            logSection.appendChild(entry);
+            logSection.scrollTop = logSection.scrollHeight;
+        }
+
+        // 救援功能
+        function triggerRescue() {
+            const btn = document.getElementById('rescue-btn');
+            btn.disabled = true;
+            btn.textContent = '🔄 保存中...';
+            
+            addLog('开始保存当前状态...');
+            
+            // 模拟保存
+            setTimeout(() => {
+                addLog('✓ 记忆已保存');
+                addLog('✓ 任务状态已保存');
+                addLog('✓ Agent 状态已保存');
+                addLog('✓ Git 提交完成');
+                
+                btn.textContent = '✅ 救援完成';
+                document.getElementById('last-backup').textContent = 
+                    new Date().toLocaleString('zh-CN');
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = '🆘 保存状态并救援';
+                }, 3000);
+            }, 2000);
+        }
+
+        // 初始化
+        updateUI();
+        addLog('监控面板已启动');
+        addLog('连接虾老板状态...');
+        addLog('✓ 状态同步成功');
+
+        // 每 30 秒更新
+        setInterval(() => {
+            updateUI();
+            addLog('状态已更新');
+        }, 30000);
+
+        // 每 5 分钟自动备份
+        setInterval(() => {
+            addLog('🔄 自动备份中...');
+            document.getElementById('last-backup').textContent = 
+                new Date().toLocaleString('zh-CN');
+            addLog('✓ 备份完成');
+        }, 300000);
+    </script>
+</body>
+</html>
