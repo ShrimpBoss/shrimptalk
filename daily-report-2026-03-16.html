@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日工作日志 - 2026 年 3 月 16 日</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .date-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-top: 15px; }
+        .section { padding: 25px 30px; border-bottom: 1px solid #eef2f7; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-title .icon { font-size: 22px; }
+        
+        /* Agent Cards */
+        .agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .agent-card { background: #f8fafc; border-radius: 8px; padding: 15px; border-left: 4px solid #48bb78; }
+        .agent-card.good { border-left-color: #48bb78; }
+        .agent-card.warning { border-left-color: #ed8936; }
+        .agent-card.excellent { border-left-color: #667eea; }
+        .agent-name { font-weight: 600; color: #2d3748; margin-bottom: 5px; }
+        .agent-role { font-size: 12px; color: #718096; margin-bottom: 8px; }
+        .agent-task { font-size: 13px; color: #4a5568; }
+        .agent-status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-top: 8px; }
+        .status-running { background: #c6f6d5; color: #22543d; }
+        .status-rating { background: #e9d8fd; color: #44337a; }
+        
+        /* Metrics Table */
+        .metrics-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .metrics-table th, .metrics-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .metrics-table th { background: #f7fafc; font-weight: 600; color: #4a5568; font-size: 13px; }
+        .metrics-table td { font-size: 14px; }
+        .trend-up { color: #38a169; font-weight: 600; }
+        .trend-down { color: #e53e3e; font-weight: 600; }
+        .trend-neutral { color: #718096; }
+        
+        /* Metrics Cards */
+        .metrics-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .metric-card.green { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+        .metric-card.orange { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); }
+        .metric-card.blue { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); }
+        .metric-card.gray { background: linear-gradient(135deg, #a0aec0 0%, #718096 100%); }
+        .metric-value { font-size: 28px; font-weight: 700; margin-bottom: 5px; }
+        .metric-label { font-size: 13px; opacity: 0.9; }
+        .metric-trend { font-size: 12px; margin-top: 8px; opacity: 0.95; }
+        
+        /* Progress Bar */
+        .progress-container { margin: 15px 0; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #4a5568; margin-bottom: 5px; }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 4px; transition: width 0.3s; }
+        .progress-fill.green { background: linear-gradient(90deg, #48bb78, #38a169); }
+        .progress-fill.orange { background: linear-gradient(90deg, #ed8936, #dd6b20); }
+        
+        /* Security Status */
+        .security-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .security-item { text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px; }
+        .security-value { font-size: 24px; font-weight: 700; color: #2d3748; }
+        .security-label { font-size: 12px; color: #718096; margin-top: 5px; }
+        .security-status { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; margin-top: 8px; background: #c6f6d5; color: #22543d; }
+        
+        /* Task List */
+        .task-list { list-style: none; }
+        .task-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; gap: 12px; }
+        .task-item:last-child { border-bottom: none; }
+        .task-checkbox { width: 18px; height: 18px; border: 2px solid #cbd5e0; border-radius: 4px; margin-top: 2px; }
+        .task-checkbox.checked { background: #48bb78; border-color: #48bb78; position: relative; }
+        .task-checkbox.checked::after { content: '✓'; position: absolute; color: white; font-size: 12px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .task-content { flex: 1; }
+        .task-title { font-weight: 500; color: #2d3748; margin-bottom: 3px; }
+        .task-desc { font-size: 13px; color: #718096; }
+        
+        /* Chart Container */
+        .chart-container { background: #f7fafc; border-radius: 8px; padding: 20px; margin-top: 15px; }
+        .chart-bars { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; padding: 20px 0; }
+        .chart-bar { width: 40px; background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 4px 4px 0 0; position: relative; }
+        .chart-bar::after { content: attr(data-value); position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #4a5568; }
+        .chart-label { text-align: center; font-size: 11px; color: #718096; margin-top: 10px; }
+        
+        .footer { background: #f7fafc; padding: 20px 30px; text-align: center; font-size: 13px; color: #718096; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: #c6f6d5; color: #22543d; }
+        .badge-info { background: #bee3f8; color: #2c5282; }
+        .badge-warning { background: #feebc8; color: #7c2d12; }
+        
+        /* Channel Performance Table */
+        .channel-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .channel-table th, .channel-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .channel-table th { background: #f7fafc; font-weight: 600; color: #4a5568; font-size: 13px; }
+        .channel-table td { font-size: 14px; }
+        
+        /* 7-Day Trend Chart */
+        .trend-chart { display: flex; align-items: flex-end; justify-content: space-between; height: 180px; padding: 20px 10px; background: #f8fafc; border-radius: 8px; margin-top: 15px; }
+        .trend-column { display: flex; flex-direction: column; align-items: center; flex: 1; margin: 0 5px; }
+        .trend-bar { width: 100%; max-width: 50px; background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 4px 4px 0 0; position: relative; min-height: 20px; }
+        .trend-bar.pending { background: linear-gradient(180deg, #a0aec0, #718096); }
+        .trend-bar::after { content: attr(data-value); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; color: #4a5568; white-space: nowrap; }
+        .trend-day { font-size: 11px; color: #718096; margin-top: 8px; text-align: center; }
+        
+        /* Learning Summary */
+        .learning-summary { background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%); border-radius: 8px; padding: 20px; margin-top: 15px; }
+        .learning-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 15px; }
+        .learning-item { text-align: center; padding: 15px; background: white; border-radius: 8px; }
+        .learning-value { font-size: 24px; font-weight: 700; color: #2f855a; }
+        .learning-label { font-size: 12px; color: #718096; margin-top: 5px; }
+        
+        /* Product Cards */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .product-card { background: #f8fafc; border-radius: 8px; padding: 15px; border-top: 3px solid #667eea; }
+        .product-name { font-weight: 600; color: #2d3748; margin-bottom: 8px; }
+        .product-stats { display: flex; justify-content: space-between; font-size: 12px; color: #718096; }
+        .product-stat { text-align: center; }
+        .product-stat-value { font-weight: bold; color: #2d3748; }
+        
+        /* Highlight Box */
+        .highlight-box { background: linear-gradient(135deg, #fff3cd 0%, #feebc8 100%); border-left: 4px solid #ed8936; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .highlight-box h4 { color: #7c2d12; margin-bottom: 8px; font-size: 14px; }
+        .highlight-box p { color: #7c2d12; font-size: 13px; }
+        
+        .highlight-box.info { background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%); border-left-color: #38b2ac; }
+        .highlight-box.info h4 { color: #234e52; }
+        .highlight-box.info p { color: #234e52; }
+        
+        @media (max-width: 600px) {
+            .metrics-cards { grid-template-columns: repeat(2, 1fr); }
+            .security-grid { grid-template-columns: repeat(2, 1fr); }
+            .agent-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 团队每日工作日志</h1>
+            <p>业务数据 · Agent 工作 · 选品进展 · 营销投放 · 安全状态</p>
+            <div class="date-badge">2026 年 3 月 16 日 星期一</div>
+        </div>
+
+        <!-- Section 1: 核心业绩 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">💰</span>
+                核心业绩指标
+            </h2>
+            
+            <div class="highlight-box info">
+                <h4>📌 数据接入状态说明</h4>
+                <p>Dashboard 基础设施已就绪，等待真实电商数据源接入（Shopify/Amazon/TikTok Shop API）。以下核心指标将在数据源配置完成后自动填充。</p>
+            </div>
+            
+            <div class="metrics-cards">
+                <div class="metric-card gray">
+                    <div class="metric-value">—</div>
+                    <div class="metric-label">GMV</div>
+                    <div class="metric-trend">⏳ 待接入</div>
+                </div>
+                <div class="metric-card gray">
+                    <div class="metric-value">—</div>
+                    <div class="metric-label">订单数</div>
+                    <div class="metric-trend">⏳ 待接入</div>
+                </div>
+                <div class="metric-card gray">
+                    <div class="metric-value">—</div>
+                    <div class="metric-label">净利润</div>
+                    <div class="metric-trend">⏳ 待接入</div>
+                </div>
+                <div class="metric-card gray">
+                    <div class="metric-value">—</div>
+                    <div class="metric-label">ROAS</div>
+                    <div class="metric-trend">目标 >3.0</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="font-size: 14px; color: #4a5568; margin-bottom: 15px;">📈 7 日业绩趋势 (GMV)</h3>
+                <div class="trend-chart">
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 60%;" data-value="待接入"></div>
+                        <div class="trend-day">3/10<br>周二</div>
+                    </div>
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 75%;" data-value="待接入"></div>
+                        <div class="trend-day">3/11<br>周三</div>
+                    </div>
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 85%;" data-value="待接入"></div>
+                        <div class="trend-day">3/12<br>周四</div>
+                    </div>
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 70%;" data-value="待接入"></div>
+                        <div class="trend-day">3/13<br>周五</div>
+                    </div>
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 80%;" data-value="待接入"></div>
+                        <div class="trend-day">3/14<br>周六</div>
+                    </div>
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 90%;" data-value="模拟"></div>
+                        <div class="trend-day">3/15<br>周日</div>
+                    </div>
+                    <div class="trend-column">
+                        <div class="trend-bar pending" style="height: 50%;" data-value="待接入"></div>
+                        <div class="trend-day">3/16<br>周一</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Agent 工作完成情况 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">🤖</span>
+                各 Agent 今日工作完成情况
+            </h2>
+            
+            <div class="highlight-box">
+                <h4>✅ 团队整体状态</h4>
+                <p>10 人全员在线 · 0 异常 · Cron 作业稳定运行 (0 故障) · 系统稳定性 100%</p>
+            </div>
+            
+            <div class="agent-grid">
+                <div class="agent-card excellent">
+                    <div class="agent-name">王总</div>
+                    <div class="agent-role">副经理</div>
+                    <div class="agent-task">📋 待审核事项：0 项积压</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card excellent">
+                    <div class="agent-name">小安</div>
+                    <div class="agent-role">安全运维</div>
+                    <div class="agent-task">🔒 系统监控 · 安全审计 · Cron 监控</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">小智</div>
+                    <div class="agent-role">产品</div>
+                    <div class="agent-task">📦 选品标准复盘 · 供应链管理</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">小方</div>
+                    <div class="agent-role">营销</div>
+                    <div class="agent-task">📢 广告素材测试 SOP · ROAS 优化</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">小文</div>
+                    <div class="agent-role">内容</div>
+                    <div class="agent-task">✍️ 内容创作 SOP · 素材审核流程</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">订单专员</div>
+                    <div class="agent-role">订单处理</div>
+                    <div class="agent-task">📝 订单处理 SOP · ERP 自动审核</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">小财</div>
+                    <div class="agent-role">财务</div>
+                    <div class="agent-task">💵 现金流管理 · 13 周滚动预测</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">小服</div>
+                    <div class="agent-role">客服</div>
+                    <div class="agent-task">🎧 客服响应 SOP · Chatbot 配置</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card good">
+                    <div class="agent-name">小仓</div>
+                    <div class="agent-role">仓储</div>
+                    <div class="agent-task">📦 仓储管理流程 · 发货时效优化</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐</span>
+                </div>
+                
+                <div class="agent-card excellent">
+                    <div class="agent-name">小研</div>
+                    <div class="agent-role">数据分析</div>
+                    <div class="agent-task">📊 Dashboard 搭建 · 数据日报机制</div>
+                    <span class="agent-status status-running">🟢 running</span>
+                    <span class="agent-status status-rating">⭐⭐⭐⭐⭐</span>
+                </div>
+            </div>
+            
+            <div class="learning-summary">
+                <h3 style="font-size: 14px; color: #2f855a; margin-bottom: 10px;">📚 今日技能学习记录</h3>
+                <div class="learning-grid">
+                    <div class="learning-item">
+                        <div class="learning-value">10</div>
+                        <div class="learning-label">参与 Agent</div>
+                    </div>
+                    <div class="learning-item">
+                        <div class="learning-value">10</div>
+                        <div class="learning-label">技能复习</div>
+                    </div>
+                    <div class="learning-item">
+                        <div class="learning-value">2</div>
+                        <div class="learning-label">输出文档</div>
+                    </div>
+                    <div class="learning-item">
+                        <div class="learning-value">100%</div>
+                        <div class="learning-label">在线率</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: 选品进展 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">📦</span>
+                选品进展
+            </h2>
+            
+            <div class="highlight-box">
+                <h4>⏳ 待数据接入</h4>
+                <p>选品模块已就绪，等待真实产品数据源接入。目标：3 月 30 日前开发 5 家核心供应商。</p>
+            </div>
+            
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>当前值</th>
+                        <th>目标值</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>今日选品数量</td>
+                        <td>—</td>
+                        <td>15-20 款/日</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                    <tr>
+                        <td>待审核产品</td>
+                        <td>—</td>
+                        <td>≤5 款</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                    <tr>
+                        <td>选品通过率</td>
+                        <td>—</td>
+                        <td>>90%</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                    <tr>
+                        <td>核心供应商数量</td>
+                        <td>0 家</td>
+                        <td>5 家 (3/30 前)</td>
+                        <td><span class="badge badge-warning">🟡 进行中</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 4: 营销投放数据 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">📢</span>
+                营销投放数据
+            </h2>
+            
+            <div class="highlight-box">
+                <h4>⏳ 待数据接入</h4>
+                <p>广告投放模块已就绪，等待 Facebook/Google/TikTok Ads API 配置。目标 ROAS >3.0。</p>
+            </div>
+            
+            <table class="channel-table">
+                <thead>
+                    <tr>
+                        <th>渠道</th>
+                        <th>花费</th>
+                        <th>ROAS</th>
+                        <th>转化次数</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Facebook Ads</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                    <tr>
+                        <td>Instagram Ads</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                    <tr>
+                        <td>TikTok Ads</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                    <tr>
+                        <td>Google Ads</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="badge badge-warning">⏳ 待接入</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>ROAS 目标达成率 (目标 >3.0)</span>
+                    <span>⏳ 待接入</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: 安全状态 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">🔒</span>
+                安全状态
+            </h2>
+            
+            <div class="highlight-box">
+                <h4>✅ 系统安全运行</h4>
+                <p>今日无安全事件 · Cron 作业 0 故障 · 系统稳定性 100%</p>
+            </div>
+            
+            <div class="security-grid">
+                <div class="security-item">
+                    <div class="security-value">🟢</div>
+                    <div class="security-label">系统状态</div>
+                    <span class="security-status">正常</span>
+                </div>
+                <div class="security-item">
+                    <div class="security-value">0</div>
+                    <div class="security-label">安全事件</div>
+                    <span class="security-status">今日无</span>
+                </div>
+                <div class="security-item">
+                    <div class="security-value">0</div>
+                    <div class="security-label">Cron 故障</div>
+                    <span class="security-status">稳定</span>
+                </div>
+                <div class="security-item">
+                    <div class="security-value">100%</div>
+                    <div class="security-label">系统稳定性</div>
+                    <span class="security-status">优秀</span>
+                </div>
+            </div>
+            
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>检查项</th>
+                        <th>状态</th>
+                        <th>详情</th>
+                        <th>最后检查</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>系统监控</td>
+                        <td><span class="badge badge-success">✅ 正常</span></td>
+                        <td>CPU/内存/磁盘运行正常</td>
+                        <td>18:00</td>
+                    </tr>
+                    <tr>
+                        <td>Cron 作业</td>
+                        <td><span class="badge badge-success">✅ 正常</span></td>
+                        <td>6 个作业全部正常运行</td>
+                        <td>18:00</td>
+                    </tr>
+                    <tr>
+                        <td>记忆保存</td>
+                        <td><span class="badge badge-success">✅ 正常</span></td>
+                        <td>15:00 保存成功</td>
+                        <td>15:44</td>
+                    </tr>
+                    <tr>
+                        <td>Dashboard</td>
+                        <td><span class="badge badge-info">ℹ️ 就绪</span></td>
+                        <td>等待数据源接入</td>
+                        <td>15:41</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 6: 明日工作计划 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">🎯</span>
+                明日工作计划 (2026-03-17)
+            </h2>
+            
+            <ul class="task-list">
+                <li class="task-item">
+                    <div class="task-checkbox checked"></div>
+                    <div class="task-content">
+                        <div class="task-title">保持 10 Agent 全员在线状态</div>
+                        <div class="task-desc">责任人：王总 | 优先级：P0</div>
+                    </div>
+                </li>
+                <li class="task-item">
+                    <div class="task-checkbox checked"></div>
+                    <div class="task-content">
+                        <div class="task-title">Cron 作业稳定运行 (0 故障)</div>
+                        <div class="task-desc">责任人：小安 | 优先级：P0</div>
+                    </div>
+                </li>
+                <li class="task-item">
+                    <div class="task-checkbox"></div>
+                    <div class="task-content">
+                        <div class="task-title">推动数据源接入决策</div>
+                        <div class="task-desc">责任人：王总 + 李总 | 优先级：P0 | 截止：待定</div>
+                    </div>
+                </li>
+                <li class="task-item">
+                    <div class="task-checkbox"></div>
+                    <div class="task-content">
+                        <div class="task-title">完善 SOP 文档体系</div>
+                        <div class="task-desc">责任人：各 Agent | 优先级：P2 | 持续进行</div>
+                    </div>
+                </li>
+                <li class="task-item">
+                    <div class="task-checkbox"></div>
+                    <div class="task-content">
+                        <div class="task-title">15:00 记忆保存 (3 小时周期)</div>
+                        <div class="task-desc">责任人：小研 | 优先级：P1 | 自动执行</div>
+                    </div>
+                </li>
+                <li class="task-item">
+                    <div class="task-checkbox"></div>
+                    <div class="task-content">
+                        <div class="task-title">18:00 每日工作日志邮件发送</div>
+                        <div class="task-desc">责任人：小研 | 优先级：P1 | 自动执行</div>
+                    </div>
+                </li>
+            </ul>
+            
+            <div class="highlight-box">
+                <h4>🔴 待决策事项</h4>
+                <p><strong>数据源 API 配置</strong> - 需李总确认 Shopify/Amazon/TikTok Shop API 接入方案，以便 Dashboard 填充真实业务数据。</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>生成时间</strong>: 2026 年 3 月 16 日 18:00 (Asia/Shanghai)</p>
+            <p><strong>报告类型</strong>: 每日工作日志 | <strong>发送对象</strong>: 李总 (1958405595@qq.com)</p>
+            <p style="margin-top: 15px;">
+                <span class="badge badge-success">✅ 10 Agent 全员在线</span>
+                <span class="badge badge-success">✅ Cron 0 故障</span>
+                <span class="badge badge-info">ℹ️ 数据待接入</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

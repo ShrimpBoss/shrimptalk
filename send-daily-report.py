@@ -21,7 +21,7 @@ SENDER_PASSWORD = os.environ.get("SMTP_PASSWORD", "")  # 从环境变量获取�
 RECEIVER_EMAIL = "1958405595@qq.com"
 
 # 报告文件路径
-REPORT_FILE = "/home/terrence/.openclaw/workspace/daily-report-2026-03-15.html"
+REPORT_FILE = "/home/terrence/.openclaw/workspace/daily-report-2026-03-16.html"
 
 def read_html_report(filepath):
     """读取 HTML 报告内容"""
@@ -37,7 +37,7 @@ def send_email():
     
     # 创建邮件
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = f"📊 每日工作日志 - 2026 年 3 月 15 日（星期日）"
+    msg['Subject'] = f"📊 每日工作日志 - 2026 年 3 月 16 日（星期一）"
     msg['From'] = f"Agent 团队工作日志系统 <{SENDER_EMAIL}>"
     msg['To'] = RECEIVER_EMAIL
     
@@ -104,7 +104,7 @@ Agent 团队工作日志系统
             attachment.add_header(
                 'Content-Disposition',
                 'attachment',
-                filename="每日工作日志 -2026-03-15.html"
+                filename="每日工作日志 -2026-03-16.html"
             )
             msg.attach(attachment)
         print("✅ 附件已添加")
@@ -128,7 +128,7 @@ Agent 团队工作日志系统
             print("   3. 重新运行此脚本")
             
             # 保存邮件到文件以便后续发送
-            email_file = "/home/terrence/.openclaw/workspace/email-draft-2026-03-15.eml"
+            email_file = "/home/terrence/.openclaw/workspace/email-draft-2026-03-16.eml"
             with open(email_file, 'w', encoding='utf-8') as f:
                 f.write(msg.as_string())
             print(f"\n💾 邮件草稿已保存到：{email_file}")
