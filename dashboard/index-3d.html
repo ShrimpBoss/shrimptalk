@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦐 虾老板 3D 监控面板 - v1.1</title>
+    <title>🦐 虾老板 3D 监控面板 - v2.0</title>
     <style>
         * {
             margin: 0;
@@ -182,6 +182,11 @@
             transform: scale(1.05);
         }
 
+        .btn.active {
+            background: rgba(78, 205, 196, 1);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
+        }
+
         .btn-rescue {
             background: rgba(231, 76, 60, 0.9);
         }
@@ -209,12 +214,12 @@
             to { transform: rotate(360deg); }
         }
 
-        /* v1.1 版本标识 */
+        /* v2.0 版本标识 */
         .version-badge {
             position: absolute;
             bottom: 0.5rem;
             right: 0.5rem;
-            background: rgba(255, 107, 107, 0.3);
+            background: rgba(78, 205, 196, 0.3);
             padding: 0.2rem 0.5rem;
             border-radius: 8px;
             font-size: 0.75rem;
@@ -259,11 +264,11 @@
     <!-- 任务面板 -->
     <div class="task-panel">
         <h2>📝 当前任务</h2>
-        <div id="task-name">3D 面板 v1.1 - 形象优化 ✨</div>
+        <div id="task-name">3D 面板 v2.0 - 书房场景 📚</div>
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill" style="width: 100%"></div>
         </div>
-        <div class="task-time" id="task-time">v1.1 已完成！</div>
+        <div class="task-time" id="task-time">v2.0 运行中 📚</div>
     </div>
 
     <!-- Agent 面板 -->
@@ -276,22 +281,23 @@
 
     <!-- 控制按钮 -->
     <div class="controls">
-        <button class="btn" onclick="changeView('office')">🏢 办公室</button>
-        <button class="btn" onclick="changeView('study')">📚 书房</button>
-        <button class="btn" onclick="changeView('bedroom')">🛏️ 卧室</button>
+        <button class="btn active" id="btn-office" onclick="changeView('office')">🏢 办公室</button>
+        <button class="btn" id="btn-study" onclick="changeView('study')">📚 书房</button>
+        <button class="btn" id="btn-bedroom" onclick="changeView('bedroom')">🛏️ 卧室</button>
         <button class="btn btn-rescue" onclick="triggerRescue()">🆘 救援</button>
     </div>
 
     <!-- 版本标识 -->
-    <div class="version-badge">v1.1 ✨</div>
+    <div class="version-badge">v2.0 📚</div>
 
     <!-- 加载动画 -->
     <div class="loading" id="loading">
         <div class="loading-spinner"></div>
-        <div>正在加载 3D 场景 v1.1...</div>
+        <div>正在加载 3D 场景 v2.0...</div>
         <div style="margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6);">
-            ✨ 新增：眼睛高光 | 尾巴摆动 | 灵活触须<br>
-            ✨ 优化：屏幕发光 | 更多书籍 | 反光地面
+            ✨ 新增：书房场景 | 虾老板看书姿势 | 场景切换<br>
+            📚 书房：整墙书柜 | 书桌 | 台灯 | 椅子<br>
+            🦐 虾老板：看书动作 | 书桌前位置
         </div>
     </div>
 
@@ -300,12 +306,13 @@
     
     <script>
         // Three.js 场景设置
-        let scene, camera, renderer, shrimpBoss, officeGroup;
+        let scene, camera, renderer, shrimpBoss, officeGroup, studyGroup;
         let currentView = 'office';
         let leftEyeHighlight, rightEyeHighlight;
         let leftTentacle, rightTentacle;
         let tail;
-        let computerScreen;
+        let computerScreen, deskLamp, deskLampLight;
+        let isReadingPose = false;
 
         function init() {
             // 创建场景
@@ -338,11 +345,14 @@
             pointLight.position.set(0, 3, 2);
             scene.add(pointLight);
 
-            // 创建虾老板（v1.1 优化版）
+            // 创建虾老板
             createShrimpBoss();
 
-            // 创建办公室场景（v1.1 优化版）
+            // 创建办公室场景
             createOffice();
+
+            // 创建书房场景
+            createStudy();
 
             // 隐藏加载动画
             setTimeout(() => {
@@ -372,7 +382,7 @@
             body.castShadow = true;
             shrimpBoss.add(body);
 
-            // 眼睛（白色球体）- v1.1 优化
+            // 眼睛（白色球体）
             const eyeGeometry = new THREE.SphereGeometry(0.15, 32, 32);
             const eyeMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xffffff,
@@ -402,7 +412,7 @@
             rightPupil.position.set(0.2, 0.3, 0.48);
             shrimpBoss.add(rightPupil);
 
-            // ✨ v1.1 新增：眼睛高光（让眼睛更有神）
+            // 眼睛高光
             const highlightGeometry = new THREE.SphereGeometry(0.04, 16, 16);
             const highlightMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xffffff,
@@ -445,7 +455,7 @@
             bow.rotation.z = Math.PI / 2;
             shrimpBoss.add(bow);
 
-            // ✨ v1.1 优化：触须更灵活（分段设计）
+            // 触须（多段）
             const tentacleSegments = 5;
             const tentacleLength = 0.12;
             const tentacleRadius = 0.025;
@@ -454,7 +464,7 @@
                 shininess: 80
             });
 
-            // 左触须（多段）
+            // 左触须
             leftTentacle = new THREE.Group();
             for (let i = 0; i < tentacleSegments; i++) {
                 const segmentGeometry = new THREE.SphereGeometry(tentacleRadius * (1 - i * 0.1), 16, 16);
@@ -465,7 +475,7 @@
             }
             shrimpBoss.add(leftTentacle);
 
-            // 右触须（多段）
+            // 右触须
             rightTentacle = new THREE.Group();
             for (let i = 0; i < tentacleSegments; i++) {
                 const segmentGeometry = new THREE.SphereGeometry(tentacleRadius * (1 - i * 0.1), 16, 16);
@@ -476,7 +486,7 @@
             }
             shrimpBoss.add(rightTentacle);
 
-            // ✨ v1.1 优化：尾巴（可摆动）
+            // 尾巴
             tail = new THREE.Group();
             const tailSegments = 4;
             for (let i = 0; i < tailSegments; i++) {
@@ -493,7 +503,7 @@
             tail.position.set(0, 0, 0);
             shrimpBoss.add(tail);
 
-            // 设置位置
+            // 设置初始位置
             shrimpBoss.position.set(0, 0, 0);
             scene.add(shrimpBoss);
 
@@ -506,7 +516,7 @@
         function createOffice() {
             officeGroup = new THREE.Group();
 
-            // ✨ v1.1 优化：地板添加反光效果
+            // 地板
             const floorGeometry = new THREE.PlaneGeometry(10, 10);
             const floorMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x34495E,
@@ -529,7 +539,7 @@
             backWall.position.set(0, 2, -2);
             officeGroup.add(backWall);
 
-            // 桌子（棕色）
+            // 桌子
             const deskTopGeometry = new THREE.BoxGeometry(3, 0.1, 1.5);
             const deskMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x8B4513,
@@ -553,7 +563,7 @@
                 officeGroup.add(leg);
             });
 
-            // ✨ v1.1 优化：电脑屏幕添加发光效果
+            // 电脑屏幕
             const computerBaseGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.05);
             const computerBaseMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x2C3E50,
@@ -579,12 +589,12 @@
             computerScreen.rotation.x = -0.2;
             officeGroup.add(computerScreen);
 
-            // 屏幕光晕效果（点光源）
+            // 屏幕光晕效果
             const screenLight = new THREE.PointLight(0x4ECDC4, 0.4, 3);
             screenLight.position.set(0, 0.8, -0.8);
             officeGroup.add(screenLight);
 
-            // ✨ v1.1 优化：书架添加更多书
+            // 书架
             const bookshelfGeometry = new THREE.BoxGeometry(1.5, 2, 0.4);
             const bookshelfMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0x8B4513,
@@ -595,7 +605,7 @@
             bookshelf.castShadow = true;
             officeGroup.add(bookshelf);
 
-            // 更多书（25 本，分 5 层）
+            // 书
             const bookColors = [0xE74C3C, 0x3498DB, 0x2ECC71, 0xF39C12, 0x9B59B6, 0x1ABC9C, 0xE67E22, 0x34495E];
             let bookIndex = 0;
             for (let row = 0; row < 5; row++) {
@@ -619,7 +629,7 @@
                 }
             }
 
-            // 白板（白色平面）
+            // 白板
             const whiteboardGeometry = new THREE.PlaneGeometry(2, 1.2);
             const whiteboardMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xFFFFFF,
@@ -640,22 +650,361 @@
             scene.add(officeGroup);
         }
 
+        function createStudy() {
+            studyGroup = new THREE.Group();
+
+            // 📚 书房地板（木质）
+            const studyFloorGeometry = new THREE.PlaneGeometry(10, 10);
+            const studyFloorMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x5D4037,
+                side: THREE.DoubleSide,
+                shininess: 80,
+                specular: 0x333333
+            });
+            const studyFloor = new THREE.Mesh(studyFloorGeometry, studyFloorMaterial);
+            studyFloor.rotation.x = Math.PI / 2;
+            studyFloor.position.y = -1;
+            studyFloor.receiveShadow = true;
+            studyGroup.add(studyFloor);
+
+            // 📚 书房墙壁（暖色调）
+            const studyWallMaterial = new THREE.MeshPhongMaterial({ color: 0xF5E6D3 });
+            
+            // 后墙
+            const studyBackWall = new THREE.Mesh(backWallGeometry, studyWallMaterial);
+            studyBackWall.position.set(0, 2, -2);
+            studyGroup.add(studyBackWall);
+
+            // 左墙
+            const leftWallGeometry = new THREE.PlaneGeometry(10, 6);
+            const studyLeftWall = new THREE.Mesh(leftWallGeometry, studyWallMaterial);
+            studyLeftWall.position.set(-5, 2, 0);
+            studyLeftWall.rotation.y = Math.PI / 2;
+            studyGroup.add(studyLeftWall);
+
+            // 📚 整墙书柜（左侧整面墙）
+            const wallBookshelfGeometry = new THREE.BoxGeometry(0.5, 5, 8);
+            const wallBookshelfMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x6D4C41,
+                shininess: 40
+            });
+            const wallBookshelf = new THREE.Mesh(wallBookshelfGeometry, wallBookshelfMaterial);
+            wallBookshelf.position.set(-4.75, 1.5, 0);
+            wallBookshelf.castShadow = true;
+            studyGroup.add(wallBookshelf);
+
+            // 📚 书柜里的书（密集排列，多层）
+            const studyBookColors = [0x8B4513, 0xA0522D, 0xCD853F, 0xDEB887, 0xD2691E, 0x5D4037, 0x4E342E, 0x3E2723, 0x6D4C41, 0x8D6E63];
+            for (let shelf = 0; shelf < 10; shelf++) {
+                const booksPerShelf = 15;
+                for (let book = 0; book < booksPerShelf; book++) {
+                    const bookW = 0.15 + Math.random() * 0.1;
+                    const bookH = 0.35 + Math.random() * 0.1;
+                    const bookD = 0.25;
+                    const bookGeometry = new THREE.BoxGeometry(bookW, bookH, bookD);
+                    const bookMaterial = new THREE.MeshPhongMaterial({ 
+                        color: studyBookColors[Math.floor(Math.random() * studyBookColors.length)],
+                        shininess: 30
+                    });
+                    const studyBook = new THREE.Mesh(bookGeometry, bookMaterial);
+                    studyBook.position.set(
+                        -4.6 + book * 0.32 + (Math.random() - 0.5) * 0.1,
+                        -2 + shelf * 0.5 + bookH / 2,
+                        (Math.random() - 0.5) * 0.3
+                    );
+                    studyBook.rotation.z = (Math.random() - 0.5) * 0.15;
+                    studyBook.rotation.y = (Math.random() - 0.5) * 0.2;
+                    studyBook.castShadow = true;
+                    studyGroup.add(studyBook);
+                }
+            }
+
+            // 📚 书桌（带书和电脑）
+            const studyDeskTopGeometry = new THREE.BoxGeometry(2.5, 0.1, 1.3);
+            const studyDeskMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x8B4513,
+                shininess: 60
+            });
+            const studyDeskTop = new THREE.Mesh(studyDeskTopGeometry, studyDeskMaterial);
+            studyDeskTop.position.set(0, 0.5, -1.2);
+            studyDeskTop.castShadow = true;
+            studyGroup.add(studyDeskTop);
+
+            // 书桌腿
+            const studyLegGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 16);
+            const studyLegPositions = [
+                [-1.1, 0, -1.7], [1.1, 0, -1.7],
+                [-1.1, 0, -0.7], [1.1, 0, -0.7]
+            ];
+            studyLegPositions.forEach(pos => {
+                const leg = new THREE.Mesh(studyLegGeometry, studyDeskMaterial);
+                leg.position.set(...pos);
+                leg.castShadow = true;
+                studyGroup.add(leg);
+            });
+
+            // 📚 桌上的书（摊开的书）
+            const openBookGeometry = new THREE.BoxGeometry(0.4, 0.03, 0.3);
+            const openBookMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFF8E7,
+                shininess: 30
+            });
+            const openBook = new THREE.Mesh(openBookGeometry, openBookMaterial);
+            openBook.position.set(-0.3, 0.67, -1.1);
+            openBook.rotation.x = -0.1;
+            openBook.castShadow = true;
+            studyGroup.add(openBook);
+
+            // 书皮
+            const bookCoverGeometry = new THREE.BoxGeometry(0.42, 0.02, 0.32);
+            const bookCoverMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x8B0000,
+                shininess: 40
+            });
+            const bookCover = new THREE.Mesh(bookCoverGeometry, bookCoverMaterial);
+            bookCover.position.set(-0.3, 0.65, -1.1);
+            studyGroup.add(bookCover);
+
+            // 📚 桌上的笔记本电脑
+            const laptopBaseGeometry = new THREE.BoxGeometry(0.5, 0.03, 0.35);
+            const laptopMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x2C3E50,
+                shininess: 80
+            });
+            const laptopBase = new THREE.Mesh(laptopBaseGeometry, laptopMaterial);
+            laptopBase.position.set(0.4, 0.67, -1.1);
+            laptopBase.castShadow = true;
+            studyGroup.add(laptopBase);
+
+            const laptopScreenGeometry = new THREE.PlaneGeometry(0.45, 0.28);
+            const laptopScreenMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x1A5276,
+                emissive: 0x1A5276,
+                emissiveIntensity: 0.5,
+                shininess: 100,
+                side: THREE.DoubleSide
+            });
+            const laptopScreen = new THREE.Mesh(laptopScreenGeometry, laptopScreenMaterial);
+            laptopScreen.position.set(0.4, 0.82, -1.08);
+            laptopScreen.rotation.x = -0.2;
+            studyGroup.add(laptopScreen);
+
+            // 📚 台灯（发光效果）
+            const lampBaseGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.1, 32);
+            const lampMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFD700,
+                shininess: 100
+            });
+            const lampBase = new THREE.Mesh(lampBaseGeometry, lampMaterial);
+            lampBase.position.set(0.8, 0.66, -1.4);
+            lampBase.castShadow = true;
+            studyGroup.add(lampBase);
+
+            // 灯杆
+            const lampPoleGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.8, 16);
+            const lampPole = new THREE.Mesh(lampPoleGeometry, lampMaterial);
+            lampPole.position.set(0.8, 1.06, -1.4);
+            studyGroup.add(lampPole);
+
+            // 灯罩
+            const lampShadeGeometry = new THREE.ConeGeometry(0.25, 0.3, 32, 1, true);
+            const lampShadeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFA500,
+                shininess: 50,
+                transparent: true,
+                opacity: 0.8,
+                side: THREE.DoubleSide
+            });
+            const lampShade = new THREE.Mesh(lampShadeGeometry, lampShadeMaterial);
+            lampShade.position.set(0.8, 1.35, -1.4);
+            lampShade.rotation.x = Math.PI;
+            studyGroup.add(lampShade);
+
+            // 灯泡发光
+            const lampBulbGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+            const lampBulbMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFFFA0,
+                emissive: 0xFFFFA0,
+                emissiveIntensity: 1
+            });
+            const lampBulb = new THREE.Mesh(lampBulbGeometry, lampBulbMaterial);
+            lampBulb.position.set(0.8, 1.25, -1.4);
+            studyGroup.add(lampBulb);
+
+            // 台灯点光源（温暖的光）
+            deskLampLight = new THREE.PointLight(0xFFA500, 1, 5);
+            deskLampLight.position.set(0.8, 1.2, -1.4);
+            studyGroup.add(deskLampLight);
+
+            deskLamp = lampShade;
+
+            // 📚 椅子（书桌前）
+            const chairSeatGeometry = new THREE.BoxGeometry(0.6, 0.1, 0.5);
+            const chairMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x2C3E50,
+                shininess: 50
+            });
+            const chairSeat = new THREE.Mesh(chairSeatGeometry, chairMaterial);
+            chairSeat.position.set(0, 0.2, 0.3);
+            chairSeat.castShadow = true;
+            studyGroup.add(chairSeat);
+
+            // 椅子腿
+            const chairLegGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.3, 16);
+            const chairLegPositions = [
+                [-0.25, 0, 0.4], [0.25, 0, 0.4],
+                [-0.25, 0, 0.2], [0.25, 0, 0.2]
+            ];
+            chairLegPositions.forEach(pos => {
+                const leg = new THREE.Mesh(chairLegGeometry, chairMaterial);
+                leg.position.set(...pos);
+                leg.castShadow = true;
+                studyGroup.add(leg);
+            });
+
+            // 椅子靠背
+            const chairBackGeometry = new THREE.BoxGeometry(0.6, 0.8, 0.05);
+            const chairBack = new THREE.Mesh(chairBackGeometry, chairMaterial);
+            chairBack.position.set(0, 0.6, 0.05);
+            chairBack.rotation.x = -0.1;
+            chairBack.castShadow = true;
+            studyGroup.add(chairBack);
+
+            // 📚 窗户（带窗帘）
+            const windowGeometry = new THREE.PlaneGeometry(2, 1.5);
+            const windowMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x87CEEB,
+                emissive: 0x87CEEB,
+                emissiveIntensity: 0.3,
+                shininess: 100,
+                transparent: true,
+                opacity: 0.7
+            });
+            const windowPane = new THREE.Mesh(windowGeometry, windowMaterial);
+            windowPane.position.set(3, 1.5, -1.95);
+            studyGroup.add(windowPane);
+
+            // 窗帘
+            const curtainGeometry = new THREE.PlaneGeometry(0.8, 2);
+            const curtainMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x8B4513,
+                shininess: 30,
+                side: THREE.DoubleSide
+            });
+            const leftCurtain = new THREE.Mesh(curtainGeometry, curtainMaterial);
+            leftCurtain.position.set(2.3, 1.5, -1.9);
+            studyGroup.add(leftCurtain);
+
+            const rightCurtain = new THREE.Mesh(curtainGeometry, curtainMaterial);
+            rightCurtain.position.set(3.7, 1.5, -1.9);
+            studyGroup.add(rightCurtain);
+
+            // 初始隐藏书房
+            studyGroup.visible = false;
+            studyGroup.position.set(0, 0, 0);
+            scene.add(studyGroup);
+        }
+
         function changeView(view) {
             currentView = view;
             
-            // 简单的位置切换（后续可以加载不同场景）
+            // 更新按钮状态
+            document.querySelectorAll('.controls .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + view).classList.add('active');
+
+            // 场景切换
             if (view === 'office') {
-                camera.position.set(0, 2, 5);
+                // 办公室场景
                 officeGroup.visible = true;
+                studyGroup.visible = false;
+                
+                camera.position.set(0, 2, 5);
+                camera.lookAt(0, 0, 0);
+                
+                // 虾老板恢复正常姿势
+                setShrimpPose('normal');
+                
+                // 更新 UI
+                document.getElementById('location').textContent = '📍 办公室';
+                document.getElementById('task-name').textContent = '3D 面板 v2.0 - 办公室场景 🏢';
+                
             } else if (view === 'study') {
-                camera.position.set(0, 2, 5);
-                // 后续添加书房场景
+                // 书房场景
+                officeGroup.visible = false;
+                studyGroup.visible = true;
+                
+                camera.position.set(0, 2.5, 4);
+                camera.lookAt(0, 0.5, -1);
+                
+                // 虾老板看书姿势（坐在书桌前）
+                setShrimpPose('reading');
+                shrimpBoss.position.set(-0.2, 0.8, -0.5);
+                
+                // 更新 UI
+                document.getElementById('location').textContent = '📍 书房';
+                document.getElementById('mood').textContent = '📖 专注';
+                document.getElementById('task-name').textContent = '3D 面板 v2.0 - 书房场景 📚';
+                
             } else if (view === 'bedroom') {
+                // 卧室场景（待实现）
+                officeGroup.visible = false;
+                studyGroup.visible = false;
+                
                 camera.position.set(0, 2, 5);
-                // 后续添加卧室场景
+                camera.lookAt(0, 0, 0);
+                
+                setShrimpPose('normal');
+                
+                document.getElementById('location').textContent = '📍 卧室';
+                document.getElementById('task-name').textContent = '3D 面板 v2.0 - 卧室场景（开发中）🛏️';
             }
-            
-            camera.lookAt(0, 0, 0);
+        }
+
+        function setShrimpPose(pose) {
+            if (pose === 'reading') {
+                // 看书姿势：身体前倾，触须放在桌上
+                isReadingPose = true;
+                shrimpBoss.rotation.x = 0.2; // 身体前倾
+                shrimpBoss.rotation.y = -0.3; // 面向书桌
+                
+                // 触须放下（放在桌上）
+                if (leftTentacle) {
+                    leftTentacle.position.set(-0.15, -0.3, 0.2);
+                    leftTentacle.rotation.x = -0.5;
+                }
+                if (rightTentacle) {
+                    rightTentacle.position.set(0.15, -0.3, 0.2);
+                    rightTentacle.rotation.x = -0.5;
+                }
+                
+                // 尾巴放松
+                if (tail) {
+                    tail.rotation.z = 0.1;
+                }
+                
+            } else {
+                // 正常姿势
+                isReadingPose = false;
+                shrimpBoss.rotation.set(0, 0, 0);
+                shrimpBoss.position.set(0, 0, 0);
+                
+                // 触须恢复正常
+                if (leftTentacle) {
+                    leftTentacle.position.set(0, 0, 0);
+                    leftTentacle.rotation.set(0, 0, 0);
+                }
+                if (rightTentacle) {
+                    rightTentacle.position.set(0, 0, 0);
+                    rightTentacle.rotation.set(0, 0, 0);
+                }
+                
+                // 尾巴恢复正常
+                if (tail) {
+                    tail.rotation.set(0, 0, 0);
+                }
+            }
         }
 
         function triggerRescue() {
@@ -688,7 +1037,7 @@
             // 每 30 秒更新状态
             setInterval(() => {
                 document.getElementById('task-time').textContent = 
-                    `v1.1 运行中 ✨`;
+                    currentView === 'study' ? 'v2.0 书房场景运行中 📚' : 'v2.0 运行中 ✨';
             }, 30000);
         }
 
@@ -697,49 +1046,75 @@
 
             const time = Date.now() * 0.001;
 
-            // 虾老板浮动动画
+            // 虾老板动画
             if (shrimpBoss) {
-                shrimpBoss.position.y = Math.sin(time + shrimpBoss.userData.floatOffset) * 0.1;
+                // 浮动动画（看书时减弱）
+                const floatAmount = isReadingPose ? 0.03 : 0.1;
+                shrimpBoss.position.y += Math.sin(time + shrimpBoss.userData.floatOffset) * floatAmount * 0.016;
                 
-                // ✨ v1.1 优化：眼睛高光闪烁（让眼睛更有神）
+                // 眼睛高光闪烁
                 if (leftEyeHighlight && rightEyeHighlight) {
                     const highlightPulse = 0.7 + Math.sin(time * 3) * 0.3;
                     leftEyeHighlight.material.emissiveIntensity = highlightPulse;
                     rightEyeHighlight.material.emissiveIntensity = highlightPulse;
                 }
 
-                // ✨ v1.1 优化：触须更灵活的摆动动画
-                if (leftTentacle) {
-                    leftTentacle.children.forEach((segment, index) => {
-                        const wave = Math.sin(time * 2 + index * 0.5) * 0.15;
-                        segment.position.x = -0.3 - index * 0.08 + Math.sin(time * 1.5 + index) * 0.05;
-                        segment.position.y = -index * 0.1 + Math.cos(time * 2 + index * 0.3) * 0.03;
-                    });
-                }
+                // 触须动画（看书时静止）
+                if (!isReadingPose) {
+                    if (leftTentacle) {
+                        leftTentacle.children.forEach((segment, index) => {
+                            segment.position.x = -0.3 - index * 0.08 + Math.sin(time * 1.5 + index) * 0.05;
+                            segment.position.y = -index * 0.1 + Math.cos(time * 2 + index * 0.3) * 0.03;
+                        });
+                    }
 
-                if (rightTentacle) {
-                    rightTentacle.children.forEach((segment, index) => {
-                        const wave = Math.sin(time * 2 + index * 0.5) * 0.15;
-                        segment.position.x = 0.3 + index * 0.08 - Math.sin(time * 1.5 + index) * 0.05;
-                        segment.position.y = -index * 0.1 + Math.cos(time * 2 + index * 0.3) * 0.03;
-                    });
-                }
+                    if (rightTentacle) {
+                        rightTentacle.children.forEach((segment, index) => {
+                            segment.position.x = 0.3 + index * 0.08 - Math.sin(time * 1.5 + index) * 0.05;
+                            segment.position.y = -index * 0.1 + Math.cos(time * 2 + index * 0.3) * 0.03;
+                        });
+                    }
 
-                // ✨ v1.1 优化：尾巴摆动动画
-                if (tail) {
-                    tail.children.forEach((segment, index) => {
-                        const wagAngle = Math.sin(time * 3 + index * 0.3) * 0.2 * (index + 1);
-                        segment.position.x = Math.sin(wagAngle) * (index * 0.05);
-                        segment.position.z = -0.3 - index * 0.08 + Math.cos(wagAngle) * (index * 0.02);
-                    });
-                    tail.rotation.z = Math.sin(time * 2) * 0.1;
+                    // 尾巴摆动（看书时减弱）
+                    if (tail) {
+                        tail.children.forEach((segment, index) => {
+                            const wagAngle = Math.sin(time * 3 + index * 0.3) * 0.2 * (index + 1);
+                            segment.position.x = Math.sin(wagAngle) * (index * 0.05);
+                            segment.position.z = -0.3 - index * 0.08 + Math.cos(wagAngle) * (index * 0.02);
+                        });
+                        tail.rotation.z = Math.sin(time * 2) * 0.1;
+                    }
+                } else {
+                    // 看书姿势：触须轻微动作（翻页）
+                    if (leftTentacle) {
+                        leftTentacle.children.forEach((segment, index) => {
+                            segment.position.x = -0.15 - index * 0.06 + Math.sin(time * 0.5 + index) * 0.02;
+                            segment.position.y = -0.3 - index * 0.08;
+                        });
+                    }
+                    if (rightTentacle) {
+                        rightTentacle.children.forEach((segment, index) => {
+                            segment.position.x = 0.15 + index * 0.06 - Math.sin(time * 0.5 + index) * 0.02;
+                            segment.position.y = -0.3 - index * 0.08;
+                        });
+                    }
+                    // 尾巴静止
+                    if (tail) {
+                        tail.rotation.z = 0.1;
+                    }
                 }
             }
 
-            // ✨ v1.1 优化：电脑屏幕发光脉动效果
-            if (computerScreen) {
+            // 电脑屏幕发光脉动（仅办公室）
+            if (computerScreen && officeGroup.visible) {
                 const pulse = 0.6 + Math.sin(time * 2) * 0.2;
                 computerScreen.material.emissiveIntensity = pulse;
+            }
+
+            // 台灯发光脉动（仅书房）
+            if (deskLampLight && studyGroup.visible) {
+                const lampPulse = 0.9 + Math.sin(time * 1.5) * 0.1;
+                deskLampLight.intensity = lampPulse;
             }
 
             renderer.render(scene, camera);
@@ -773,7 +1148,8 @@
                         'XYZ'
                     ));
 
-                officeGroup.quaternion.multiplyQuaternions(deltaRotationQuaternion, officeGroup.quaternion);
+                const activeGroup = currentView === 'study' ? studyGroup : officeGroup;
+                activeGroup.quaternion.multiplyQuaternions(deltaRotationQuaternion, activeGroup.quaternion);
             }
 
             previousMousePosition = { x: e.offsetX, y: e.offsetY };
