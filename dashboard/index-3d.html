@@ -288,16 +288,17 @@
     </div>
 
     <!-- 版本标识 -->
-    <div class="version-badge">v2.0 📚</div>
+    <div class="version-badge">v2.0 🛏️</div>
 
     <!-- 加载动画 -->
     <div class="loading" id="loading">
         <div class="loading-spinner"></div>
         <div>正在加载 3D 场景 v2.0...</div>
         <div style="margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6);">
-            ✨ 新增：书房场景 | 虾老板看书姿势 | 场景切换<br>
+            ✨ 新增：书房场景 | 卧室场景 | 虾老板看书/睡觉姿势 | 场景切换<br>
             📚 书房：整墙书柜 | 书桌 | 台灯 | 椅子<br>
-            🦐 虾老板：看书动作 | 书桌前位置
+            🛏️ 卧室：床 | 床头灯 | 床头柜 | 窗户 | 月亮<br>
+            🦐 虾老板：看书动作 | 睡觉躺平 | 闭眼效果
         </div>
     </div>
 
@@ -306,13 +307,15 @@
     
     <script>
         // Three.js 场景设置
-        let scene, camera, renderer, shrimpBoss, officeGroup, studyGroup;
+        let scene, camera, renderer, shrimpBoss, officeGroup, studyGroup, bedroomGroup;
         let currentView = 'office';
         let leftEyeHighlight, rightEyeHighlight;
         let leftTentacle, rightTentacle;
         let tail;
         let computerScreen, deskLamp, deskLampLight;
         let isReadingPose = false;
+        let isSleepingPose = false;
+        let bedsideLamp, bedsideLampLight;
 
         function init() {
             // 创建场景
@@ -353,6 +356,9 @@
 
             // 创建书房场景
             createStudy();
+
+            // 创建卧室场景
+            createBedroom();
 
             // 隐藏加载动画
             setTimeout(() => {
@@ -905,6 +911,307 @@
             scene.add(studyGroup);
         }
 
+        function createBedroom() {
+            bedroomGroup = new THREE.Group();
+
+            // 🛏️ 卧室地板（温暖木质）
+            const bedroomFloorGeometry = new THREE.PlaneGeometry(10, 10);
+            const bedroomFloorMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x6D4C41,
+                side: THREE.DoubleSide,
+                shininess: 60,
+                specular: 0x222222
+            });
+            const bedroomFloor = new THREE.Mesh(bedroomFloorGeometry, bedroomFloorMaterial);
+            bedroomFloor.rotation.x = Math.PI / 2;
+            bedroomFloor.position.y = -1;
+            bedroomFloor.receiveShadow = true;
+            bedroomGroup.add(bedroomFloor);
+
+            // 🛏️ 卧室墙壁（柔和的浅蓝色，夜晚氛围）
+            const bedroomWallMaterial = new THREE.MeshPhongMaterial({ color: 0xC5DDE8 });
+            
+            // 后墙
+            const bedroomBackWall = new THREE.Mesh(backWallGeometry, bedroomWallMaterial);
+            bedroomBackWall.position.set(0, 2, -2);
+            bedroomGroup.add(bedroomBackWall);
+
+            // 左墙
+            const bedroomLeftWall = new THREE.Mesh(leftWallGeometry, bedroomWallMaterial);
+            bedroomLeftWall.position.set(-5, 2, 0);
+            bedroomLeftWall.rotation.y = Math.PI / 2;
+            bedroomGroup.add(bedroomLeftWall);
+
+            // 右墙
+            const bedroomRightWall = new THREE.Mesh(leftWallGeometry, bedroomWallMaterial);
+            bedroomRightWall.position.set(5, 2, 0);
+            bedroomRightWall.rotation.y = -Math.PI / 2;
+            bedroomGroup.add(bedroomRightWall);
+
+            // 🛏️ 床（虾老板可以躺下）
+            // 床架
+            const bedFrameGeometry = new THREE.BoxGeometry(4, 0.4, 5);
+            const bedFrameMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x5D4037,
+                shininess: 40
+            });
+            const bedFrame = new THREE.Mesh(bedFrameGeometry, bedFrameMaterial);
+            bedFrame.position.set(-2, -0.8, 0);
+            bedFrame.castShadow = true;
+            bedroomGroup.add(bedFrame);
+
+            // 床腿
+            const bedLegGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 16);
+            const bedLegPositions = [
+                [-3.8, -1.15, 2.3], [0.2, -1.15, 2.3],
+                [-3.8, -1.15, -2.3], [0.2, -1.15, -2.3]
+            ];
+            bedLegPositions.forEach(pos => {
+                const leg = new THREE.Mesh(bedLegGeometry, bedFrameMaterial);
+                leg.position.set(...pos);
+                leg.castShadow = true;
+                bedroomGroup.add(leg);
+            });
+
+            // 床垫
+            const mattressGeometry = new THREE.BoxGeometry(3.6, 0.3, 4.6);
+            const mattressMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xF5F5DC,
+                shininess: 30
+            });
+            const mattress = new THREE.Mesh(mattressGeometry, mattressMaterial);
+            mattress.position.set(-2, -0.45, 0);
+            mattress.castShadow = true;
+            bedroomGroup.add(mattress);
+
+            // 床单（浅蓝色）
+            const blanketGeometry = new THREE.BoxGeometry(3.4, 0.15, 4.4);
+            const blanketMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x87CEEB,
+                shininess: 20
+            });
+            const blanket = new THREE.Mesh(blanketGeometry, blanketMaterial);
+            blanket.position.set(-2, -0.3, 0);
+            bedroomGroup.add(blanket);
+
+            // 枕头（两个，白色）
+            const pillowGeometry = new THREE.BoxGeometry(0.8, 0.2, 0.5);
+            const pillowMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFFFFF,
+                shininess: 25
+            });
+            const pillow1 = new THREE.Mesh(pillowGeometry, pillowMaterial);
+            pillow1.position.set(-3.3, -0.25, 1);
+            pillow1.rotation.x = 0.1;
+            bedroomGroup.add(pillow1);
+
+            const pillow2 = new THREE.Mesh(pillowGeometry, pillowMaterial);
+            pillow2.position.set(-3.3, -0.25, -1);
+            pillow2.rotation.x = 0.1;
+            bedroomGroup.add(pillow2);
+
+            // 床头板
+            const headboardGeometry = new THREE.BoxGeometry(0.3, 1.5, 4.2);
+            const headboardMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x5D4037,
+                shininess: 40
+            });
+            const headboard = new THREE.Mesh(headboardGeometry, headboardMaterial);
+            headboard.position.set(-3.85, 0.25, 0);
+            headboard.castShadow = true;
+            bedroomGroup.add(headboard);
+
+            // 🛏️ 床头柜（左侧）
+            const nightstandGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.6);
+            const nightstandMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x6D4C41,
+                shininess: 35
+            });
+            const nightstand = new THREE.Mesh(nightstandGeometry, nightstandMaterial);
+            nightstand.position.set(-4.5, -0.7, 1.5);
+            nightstand.castShadow = true;
+            bedroomGroup.add(nightstand);
+
+            // 🛏️ 床头柜抽屉
+            const drawerGeometry = new THREE.BoxGeometry(0.7, 0.15, 0.5);
+            const drawerMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x5D4037,
+                shininess: 30
+            });
+            const drawer1 = new THREE.Mesh(drawerGeometry, drawerMaterial);
+            drawer1.position.set(-4.5, -0.6, 1.5);
+            bedroomGroup.add(drawer1);
+
+            const drawer2 = new THREE.Mesh(drawerGeometry, drawerMaterial);
+            drawer2.position.set(-4.5, -0.8, 1.5);
+            bedroomGroup.add(drawer2);
+
+            // 🛏️ 床头柜上的书
+            const bedsideBookGeometry = new THREE.BoxGeometry(0.25, 0.05, 0.35);
+            const bedsideBookMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x8B4513,
+                shininess: 25
+            });
+            const bedsideBook = new THREE.Mesh(bedsideBookGeometry, bedsideBookMaterial);
+            bedsideBook.position.set(-4.5, -0.38, 1.5);
+            bedsideBook.rotation.y = 0.3;
+            bedroomGroup.add(bedsideBook);
+
+            // 🛏️ 床头柜上的闹钟
+            const alarmClockBaseGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 32);
+            const alarmClockMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x2C3E50,
+                shininess: 60
+            });
+            const alarmClockBase = new THREE.Mesh(alarmClockBaseGeometry, alarmClockMaterial);
+            alarmClockBase.position.set(-4.45, -0.34, 1.2);
+            bedroomGroup.add(alarmClockBase);
+
+            const alarmClockTopGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const alarmClockTop = new THREE.Mesh(alarmClockTopGeometry, alarmClockMaterial);
+            alarmClockTop.position.set(-4.45, -0.26, 1.2);
+            alarmClockTop.scale.set(1, 0.8, 1);
+            bedroomGroup.add(alarmClockTop);
+
+            // 闹钟发光显示屏
+            const clockDisplayGeometry = new THREE.PlaneGeometry(0.12, 0.06);
+            const clockDisplayMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x00FF00,
+                emissive: 0x00FF00,
+                emissiveIntensity: 0.8,
+                shininess: 100,
+                side: THREE.DoubleSide
+            });
+            const clockDisplay = new THREE.Mesh(clockDisplayGeometry, clockDisplayMaterial);
+            clockDisplay.position.set(-4.33, -0.26, 1.2);
+            clockDisplay.rotation.y = -Math.PI / 2;
+            bedroomGroup.add(clockDisplay);
+
+            // 🛏️ 床头灯（左侧，发光效果）
+            const lampBaseGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.08, 32);
+            const lampBaseMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFD700,
+                shininess: 80
+            });
+            const bedsideLampBase = new THREE.Mesh(lampBaseGeometry, lampBaseMaterial);
+            bedsideLampBase.position.set(-4.5, -0.38, 1.8);
+            bedroomGroup.add(bedsideLampBase);
+
+            // 灯杆
+            const lampPoleGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.5, 16);
+            const lampPole = new THREE.Mesh(lampPoleGeometry, lampBaseMaterial);
+            lampPole.position.set(-4.5, -0.13, 1.8);
+            bedroomGroup.add(lampPole);
+
+            // 灯罩（暖黄色）
+            const lampShadeGeometry = new THREE.ConeGeometry(0.2, 0.25, 32, 1, true);
+            const lampShadeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFA500,
+                shininess: 40,
+                transparent: true,
+                opacity: 0.85,
+                side: THREE.DoubleSide
+            });
+            bedsideLamp = new THREE.Mesh(lampShadeGeometry, lampShadeMaterial);
+            bedsideLamp.position.set(-4.5, 0.05, 1.8);
+            bedsideLamp.rotation.x = Math.PI;
+            bedroomGroup.add(bedsideLamp);
+
+            // 灯泡（发光）
+            const bulbGeometry = new THREE.SphereGeometry(0.06, 16, 16);
+            const bulbMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFFFA0,
+                emissive: 0xFFFFA0,
+                emissiveIntensity: 1
+            });
+            const bulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
+            bulb.position.set(-4.5, 0, 1.8);
+            bedroomGroup.add(bulb);
+
+            // 床头灯点光源（温暖的黄光）
+            bedsideLampLight = new THREE.PointLight(0xFFA500, 0.8, 4);
+            bedsideLampLight.position.set(-4.5, 0, 1.8);
+            bedroomGroup.add(bedsideLampLight);
+
+            // 🛏️ 窗户（带窗帘，夜晚可以看到外面）
+            const bedroomWindowGeometry = new THREE.PlaneGeometry(2, 1.5);
+            const bedroomWindowMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x1a1a3e,
+                emissive: 0x1a1a3e,
+                emissiveIntensity: 0.2,
+                shininess: 100,
+                transparent: true,
+                opacity: 0.8
+            });
+            const bedroomWindow = new THREE.Mesh(bedroomWindowGeometry, bedroomWindowMaterial);
+            bedroomWindow.position.set(0, 1.5, -1.95);
+            bedroomGroup.add(bedroomWindow);
+
+            // 窗户框
+            const windowFrameGeometry = new THREE.BoxGeometry(2.2, 0.1, 0.05);
+            const windowFrameMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+            const windowTopFrame = new THREE.Mesh(windowFrameGeometry, windowFrameMaterial);
+            windowTopFrame.position.set(0, 2.3, -1.93);
+            bedroomGroup.add(windowTopFrame);
+
+            const windowSideFrameGeometry = new THREE.BoxGeometry(0.1, 1.7, 0.05);
+            const windowLeftFrame = new THREE.Mesh(windowSideFrameGeometry, windowFrameMaterial);
+            windowLeftFrame.position.set(-1.05, 1.5, -1.93);
+            bedroomGroup.add(windowLeftFrame);
+
+            const windowRightFrame = new THREE.Mesh(windowSideFrameGeometry, windowFrameMaterial);
+            windowRightFrame.position.set(1.05, 1.5, -1.93);
+            bedroomGroup.add(windowRightFrame);
+
+            // 月亮（窗外）
+            const moonGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+            const moonMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFFFE0,
+                emissive: 0xFFFFE0,
+                emissiveIntensity: 0.6,
+                shininess: 100
+            });
+            const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+            moon.position.set(0.5, 2, -2.5);
+            bedroomGroup.add(moon);
+
+            // 月亮光晕
+            const moonLight = new THREE.PointLight(0xFFFFE0, 0.3, 8);
+            moonLight.position.set(0.5, 2, -2);
+            bedroomGroup.add(moonLight);
+
+            // 窗帘（深蓝色，夜晚）
+            const bedroomCurtainGeometry = new THREE.PlaneGeometry(0.9, 2.2);
+            const bedroomCurtainMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x2C3E50,
+                shininess: 30,
+                side: THREE.DoubleSide
+            });
+            const bedroomLeftCurtain = new THREE.Mesh(bedroomCurtainGeometry, bedroomCurtainMaterial);
+            bedroomLeftCurtain.position.set(-0.7, 1.5, -1.85);
+            bedroomGroup.add(bedroomLeftCurtain);
+
+            const bedroomRightCurtain = new THREE.Mesh(bedroomCurtainGeometry, bedroomCurtainMaterial);
+            bedroomRightCurtain.position.set(0.7, 1.5, -1.85);
+            bedroomGroup.add(bedroomRightCurtain);
+
+            // 🛏️ 地毯（床前）
+            const rugGeometry = new THREE.PlaneGeometry(3, 2);
+            const rugMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xC0392B,
+                shininess: 20
+            });
+            const rug = new THREE.Mesh(rugGeometry, rugMaterial);
+            rug.rotation.x = Math.PI / 2;
+            rug.position.set(-0.5, -0.98, 2.5);
+            bedroomGroup.add(rug);
+
+            // 初始隐藏卧室
+            bedroomGroup.visible = false;
+            bedroomGroup.position.set(0, 0, 0);
+            scene.add(bedroomGroup);
+        }
+
         function changeView(view) {
             currentView = view;
             
@@ -948,17 +1255,23 @@
                 document.getElementById('task-name').textContent = '3D 面板 v2.0 - 书房场景 📚';
                 
             } else if (view === 'bedroom') {
-                // 卧室场景（待实现）
+                // 卧室场景
                 officeGroup.visible = false;
                 studyGroup.visible = false;
+                bedroomGroup.visible = true;
                 
-                camera.position.set(0, 2, 5);
-                camera.lookAt(0, 0, 0);
+                camera.position.set(0, 2, 6);
+                camera.lookAt(-1, 0, 0);
                 
-                setShrimpPose('normal');
+                // 虾老板睡觉姿势（躺在床上）
+                setShrimpPose('sleeping');
+                shrimpBoss.position.set(-2, 0.2, 0);
+                shrimpBoss.rotation.y = Math.PI / 2; // 面向床的侧面
                 
+                // 更新 UI
                 document.getElementById('location').textContent = '📍 卧室';
-                document.getElementById('task-name').textContent = '3D 面板 v2.0 - 卧室场景（开发中）🛏️';
+                document.getElementById('mood').textContent = '😴 睡觉';
+                document.getElementById('task-name').textContent = '3D 面板 v2.0 - 卧室场景 🛏️';
             }
         }
 
@@ -966,6 +1279,7 @@
             if (pose === 'reading') {
                 // 看书姿势：身体前倾，触须放在桌上
                 isReadingPose = true;
+                isSleepingPose = false;
                 shrimpBoss.rotation.x = 0.2; // 身体前倾
                 shrimpBoss.rotation.y = -0.3; // 面向书桌
                 
@@ -984,9 +1298,42 @@
                     tail.rotation.z = 0.1;
                 }
                 
+                // 眼睛睁开
+                if (leftEyeHighlight) leftEyeHighlight.visible = true;
+                if (rightEyeHighlight) rightEyeHighlight.visible = true;
+                
+            } else if (pose === 'sleeping') {
+                // 睡觉姿势：躺在床上，闭眼
+                isSleepingPose = true;
+                isReadingPose = false;
+                
+                // 身体平躺（旋转 90 度）
+                shrimpBoss.rotation.x = Math.PI / 2;
+                shrimpBoss.rotation.z = Math.PI / 2;
+                
+                // 触须放松放在身体两侧
+                if (leftTentacle) {
+                    leftTentacle.position.set(-0.2, -0.4, 0);
+                    leftTentacle.rotation.set(0, 0, 0.3);
+                }
+                if (rightTentacle) {
+                    rightTentacle.position.set(0.2, -0.4, 0);
+                    rightTentacle.rotation.set(0, 0, -0.3);
+                }
+                
+                // 尾巴自然弯曲
+                if (tail) {
+                    tail.rotation.z = 0.2;
+                }
+                
+                // 闭眼效果（隐藏眼睛高光）
+                if (leftEyeHighlight) leftEyeHighlight.visible = false;
+                if (rightEyeHighlight) rightEyeHighlight.visible = false;
+                
             } else {
                 // 正常姿势
                 isReadingPose = false;
+                isSleepingPose = false;
                 shrimpBoss.rotation.set(0, 0, 0);
                 shrimpBoss.position.set(0, 0, 0);
                 
@@ -1004,6 +1351,10 @@
                 if (tail) {
                     tail.rotation.set(0, 0, 0);
                 }
+                
+                // 眼睛睁开
+                if (leftEyeHighlight) leftEyeHighlight.visible = true;
+                if (rightEyeHighlight) rightEyeHighlight.visible = true;
             }
         }
 
@@ -1036,8 +1387,13 @@
 
             // 每 30 秒更新状态
             setInterval(() => {
-                document.getElementById('task-time').textContent = 
-                    currentView === 'study' ? 'v2.0 书房场景运行中 📚' : 'v2.0 运行中 ✨';
+                if (currentView === 'study') {
+                    document.getElementById('task-time').textContent = 'v2.0 书房场景运行中 📚';
+                } else if (currentView === 'bedroom') {
+                    document.getElementById('task-time').textContent = 'v2.0 卧室场景运行中 🛏️';
+                } else {
+                    document.getElementById('task-time').textContent = 'v2.0 运行中 ✨';
+                }
             }, 30000);
         }
 
@@ -1048,19 +1404,22 @@
 
             // 虾老板动画
             if (shrimpBoss) {
-                // 浮动动画（看书时减弱）
-                const floatAmount = isReadingPose ? 0.03 : 0.1;
-                shrimpBoss.position.y += Math.sin(time + shrimpBoss.userData.floatOffset) * floatAmount * 0.016;
-                
-                // 眼睛高光闪烁
-                if (leftEyeHighlight && rightEyeHighlight) {
-                    const highlightPulse = 0.7 + Math.sin(time * 3) * 0.3;
-                    leftEyeHighlight.material.emissiveIntensity = highlightPulse;
-                    rightEyeHighlight.material.emissiveIntensity = highlightPulse;
+                // 睡觉时完全静止，不浮动
+                if (!isSleepingPose) {
+                    // 浮动动画（看书时减弱）
+                    const floatAmount = isReadingPose ? 0.03 : 0.1;
+                    shrimpBoss.position.y += Math.sin(time + shrimpBoss.userData.floatOffset) * floatAmount * 0.016;
+                    
+                    // 眼睛高光闪烁（睡觉时不闪烁）
+                    if (leftEyeHighlight && rightEyeHighlight && !isSleepingPose) {
+                        const highlightPulse = 0.7 + Math.sin(time * 3) * 0.3;
+                        leftEyeHighlight.material.emissiveIntensity = highlightPulse;
+                        rightEyeHighlight.material.emissiveIntensity = highlightPulse;
+                    }
                 }
 
-                // 触须动画（看书时静止）
-                if (!isReadingPose) {
+                // 触须动画（睡觉和看书时静止）
+                if (!isReadingPose && !isSleepingPose) {
                     if (leftTentacle) {
                         leftTentacle.children.forEach((segment, index) => {
                             segment.position.x = -0.3 - index * 0.08 + Math.sin(time * 1.5 + index) * 0.05;
@@ -1075,7 +1434,7 @@
                         });
                     }
 
-                    // 尾巴摆动（看书时减弱）
+                    // 尾巴摆动（看书和睡觉时减弱）
                     if (tail) {
                         tail.children.forEach((segment, index) => {
                             const wagAngle = Math.sin(time * 3 + index * 0.3) * 0.2 * (index + 1);
@@ -1084,7 +1443,7 @@
                         });
                         tail.rotation.z = Math.sin(time * 2) * 0.1;
                     }
-                } else {
+                } else if (isReadingPose) {
                     // 看书姿势：触须轻微动作（翻页）
                     if (leftTentacle) {
                         leftTentacle.children.forEach((segment, index) => {
@@ -1103,6 +1462,7 @@
                         tail.rotation.z = 0.1;
                     }
                 }
+                // 睡觉时触须和尾巴完全静止
             }
 
             // 电脑屏幕发光脉动（仅办公室）
@@ -1115,6 +1475,12 @@
             if (deskLampLight && studyGroup.visible) {
                 const lampPulse = 0.9 + Math.sin(time * 1.5) * 0.1;
                 deskLampLight.intensity = lampPulse;
+            }
+
+            // 床头灯发光脉动（仅卧室）
+            if (bedsideLampLight && bedroomGroup.visible) {
+                const bedsideLampPulse = 0.7 + Math.sin(time * 1.2) * 0.1;
+                bedsideLampLight.intensity = bedsideLampPulse;
             }
 
             renderer.render(scene, camera);
