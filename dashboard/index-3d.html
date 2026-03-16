@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾老板 3D 监控面板 - 快速版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* UI 覆盖层 */
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            pointer-events: none;
+        }
+
+        .header {
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            display: inline-block;
+            pointer-events: auto;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: rgba(39, 174, 96, 0.8);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* 状态面板 */
+        .status-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 300px;
+            pointer-events: auto;
+        }
+
+        .status-panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #FF6B6B;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 任务面板 */
+        .task-panel {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 350px;
+            pointer-events: auto;
+        }
+
+        .task-panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #4ECDC4;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        /* Agent 面板 */
+        .agents-panel {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 280px;
+            max-height: 300px;
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+
+        .agents-panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #FFE66D;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+            font-size: 0.85rem;
+        }
+
+        .agent-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .agent-status.working { background: #27ae60; }
+        .agent-status.busy { background: #f39c12; }
+        .agent-status.blocked { background: #e74c3c; }
+
+        /* 控制按钮 */
+        .controls {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            pointer-events: auto;
+        }
+
+        .btn {
+            background: rgba(255, 107, 107, 0.8);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 107, 107, 1);
+            transform: scale(1.05);
+        }
+
+        .btn-rescue {
+            background: rgba(231, 76, 60, 0.9);
+        }
+
+        /* 加载动画 */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: #FF6B6B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <!-- Three.js 将在这里渲染 -->
+    </div>
+
+    <!-- UI 覆盖层 -->
+    <div class="ui-overlay">
+        <div class="header">
+            <h1>🦐 虾老板 3D 监控面板</h1>
+            <div class="status-badge" id="connection-status">🟢 实时连接中</div>
+        </div>
+    </div>
+
+    <!-- 状态面板 -->
+    <div class="status-panel">
+        <h2>📊 当前状态</h2>
+        <div class="status-item">
+            <span>心情</span>
+            <span id="mood">😊 开心</span>
+        </div>
+        <div class="status-item">
+            <span>位置</span>
+            <span id="location">📍 办公室</span>
+        </div>
+        <div class="status-item">
+            <span>效率</span>
+            <span id="efficiency">🟢 高效</span>
+        </div>
+        <div class="status-item">
+            <span>阻塞</span>
+            <span id="blocked">❌ 否</span>
+        </div>
+    </div>
+
+    <!-- 任务面板 -->
+    <div class="task-panel">
+        <h2>📝 当前任务</h2>
+        <div id="task-name">3D 面板开发中...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 60%"></div>
+        </div>
+        <div class="task-time" id="task-time">已进行：30 分钟</div>
+    </div>
+
+    <!-- Agent 面板 -->
+    <div class="agents-panel">
+        <h2>👥 Agent 员工</h2>
+        <div id="agents-list">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 控制按钮 -->
+    <div class="controls">
+        <button class="btn" onclick="changeView('office')">🏢 办公室</button>
+        <button class="btn" onclick="changeView('study')">📚 书房</button>
+        <button class="btn" onclick="changeView('bedroom')">🛏️ 卧室</button>
+        <button class="btn btn-rescue" onclick="triggerRescue()">🆘 救援</button>
+    </div>
+
+    <!-- 加载动画 -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>正在加载 3D 场景...</div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        // Three.js 场景设置
+        let scene, camera, renderer, shrimpBoss, officeGroup;
+        let currentView = 'office';
+
+        function init() {
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+            scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
+
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 5);
+            camera.lookAt(0, 0, 0);
+
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // 添加灯光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            // 创建虾老板（简化版 - 几何体组合）
+            createShrimpBoss();
+
+            // 创建办公室场景
+            createOffice();
+
+            // 隐藏加载动画
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 2000);
+
+            // 开始动画循环
+            animate();
+
+            // 更新 UI
+            updateUI();
+        }
+
+        function createShrimpBoss() {
+            shrimpBoss = new THREE.Group();
+
+            // 身体（粉色椭球体）
+            const bodyGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const bodyMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFF6B6B,
+                transparent: true,
+                opacity: 0.9
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.scale.set(1, 1.2, 0.8);
+            body.castShadow = true;
+            shrimpBoss.add(body);
+
+            // 眼睛（白色球体）
+            const eyeGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+            const eyeMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+            
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.2, 0.3, 0.4);
+            shrimpBoss.add(leftEye);
+
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.2, 0.3, 0.4);
+            shrimpBoss.add(rightEye);
+
+            // 瞳孔（黑色小球）
+            const pupilGeometry = new THREE.SphereGeometry(0.07, 16, 16);
+            const pupilMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+            
+            const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+            leftPupil.position.set(-0.2, 0.3, 0.48);
+            shrimpBoss.add(leftPupil);
+
+            const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+            rightPupil.position.set(0.2, 0.3, 0.48);
+            shrimpBoss.add(rightPupil);
+
+            // 眼镜（黑色圆环）
+            const glassesGeometry = new THREE.TorusGeometry(0.18, 0.02, 8, 32);
+            const glassesMaterial = new THREE.MeshPhongMaterial({ color: 0x2C3E50 });
+            
+            const leftGlasses = new THREE.Mesh(glassesGeometry, glassesMaterial);
+            leftGlasses.position.set(-0.2, 0.3, 0.45);
+            shrimpBoss.add(leftGlasses);
+
+            const rightGlasses = new THREE.Mesh(glassesGeometry, glassesMaterial);
+            rightGlasses.position.set(0.2, 0.3, 0.45);
+            shrimpBoss.add(rightGlasses);
+
+            // 领结（红色）
+            const bowGeometry = new THREE.ConeGeometry(0.15, 0.1, 4);
+            const bowMaterial = new THREE.MeshPhongMaterial({ color: 0xE74C3C });
+            const bow = new THREE.Mesh(bowGeometry, bowMaterial);
+            bow.position.set(0, -0.3, 0.4);
+            bow.rotation.z = Math.PI / 2;
+            shrimpBoss.add(bow);
+
+            // 触须（粉色圆柱体）
+            const tentacleGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.5, 8);
+            const tentacleMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6B6B });
+            
+            const leftTentacle = new THREE.Mesh(tentacleGeometry, tentacleMaterial);
+            leftTentacle.position.set(-0.3, 0, 0.3);
+            leftTentacle.rotation.z = 0.3;
+            shrimpBoss.add(leftTentacle);
+
+            const rightTentacle = new THREE.Mesh(tentacleGeometry, tentacleMaterial);
+            rightTentacle.position.set(0.3, 0, 0.3);
+            rightTentacle.rotation.z = -0.3;
+            shrimpBoss.add(rightTentacle);
+
+            // 尾巴（扇形）
+            const tailGeometry = new THREE.ConeGeometry(0.3, 0.5, 4);
+            const tailMaterial = new THREE.MeshPhongMaterial({ color: 0xFF6B6B });
+            const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+            tail.position.set(0, -0.7, -0.3);
+            tail.rotation.x = Math.PI / 2;
+            shrimpBoss.add(tail);
+
+            // 设置位置
+            shrimpBoss.position.set(0, 0, 0);
+            scene.add(shrimpBoss);
+
+            // 添加浮动动画
+            shrimpBoss.userData = {
+                floatOffset: Math.random() * Math.PI * 2
+            };
+        }
+
+        function createOffice() {
+            officeGroup = new THREE.Group();
+
+            // 地板
+            const floorGeometry = new THREE.PlaneGeometry(10, 10);
+            const floorMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x34495E,
+                side: THREE.DoubleSide
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = Math.PI / 2;
+            floor.position.y = -1;
+            floor.receiveShadow = true;
+            officeGroup.add(floor);
+
+            // 墙壁（后）
+            const backWallGeometry = new THREE.PlaneGeometry(10, 6);
+            const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xECF0F1 });
+            const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+            backWall.position.set(0, 2, -2);
+            officeGroup.add(backWall);
+
+            // 桌子（棕色）
+            const deskTopGeometry = new THREE.BoxGeometry(3, 0.1, 1.5);
+            const deskMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+            const deskTop = new THREE.Mesh(deskTopGeometry, deskMaterial);
+            deskTop.position.set(0, 0.5, -1);
+            deskTop.castShadow = true;
+            officeGroup.add(deskTop);
+
+            // 桌腿
+            const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.5, 8);
+            const legPositions = [
+                [-1.3, 0, -1.6], [1.3, 0, -1.6],
+                [-1.3, 0, -0.4], [1.3, 0, -0.4]
+            ];
+            legPositions.forEach(pos => {
+                const leg = new THREE.Mesh(legGeometry, deskMaterial);
+                leg.position.set(...pos);
+                leg.castShadow = true;
+                officeGroup.add(leg);
+            });
+
+            // 电脑（黑色立方体）
+            const computerGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.05);
+            const computerMaterial = new THREE.MeshPhongMaterial({ color: 0x2C3E50 });
+            const computer = new THREE.Mesh(computerGeometry, computerMaterial);
+            computer.position.set(0, 0.8, -1);
+            computer.rotation.x = -0.2;
+            computer.castShadow = true;
+            officeGroup.add(computer);
+
+            // 书架（棕色立方体组合）
+            const bookshelfGeometry = new THREE.BoxGeometry(1.5, 2, 0.4);
+            const bookshelf = new THREE.Mesh(bookshelfGeometry, deskMaterial);
+            bookshelf.position.set(-3, 0.5, -1.5);
+            bookshelf.castShadow = true;
+            officeGroup.add(bookshelf);
+
+            // 书（彩色小立方体）
+            const bookColors = [0xE74C3C, 0x3498DB, 0x2ECC71, 0xF39C12, 0x9B59B6];
+            for (let i = 0; i < 15; i++) {
+                const bookGeometry = new THREE.BoxGeometry(0.2, 0.3, 0.05);
+                const bookMaterial = new THREE.MeshPhongMaterial({ 
+                    color: bookColors[i % bookColors.length]
+                });
+                const book = new THREE.Mesh(bookGeometry, bookMaterial);
+                const row = Math.floor(i / 5);
+                const col = i % 5;
+                book.position.set(-3 + col * 0.25, 0.3 + row * 0.35, -1.3);
+                book.castShadow = true;
+                officeGroup.add(book);
+            }
+
+            // 白板（白色平面）
+            const whiteboardGeometry = new THREE.PlaneGeometry(2, 1.2);
+            const whiteboardMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+            const whiteboard = new THREE.Mesh(whiteboardGeometry, whiteboardMaterial);
+            whiteboard.position.set(3, 1, -1.9);
+            officeGroup.add(whiteboard);
+
+            // 白板框
+            const frameGeometry = new THREE.BoxGeometry(2.1, 0.05, 0.05);
+            const frameMaterial = new THREE.MeshPhongMaterial({ color: 0x2C3E50 });
+            const topFrame = new THREE.Mesh(frameGeometry, frameMaterial);
+            topFrame.position.set(3, 1.65, -1.88);
+            officeGroup.add(topFrame);
+
+            officeGroup.position.set(0, 0, 0);
+            scene.add(officeGroup);
+        }
+
+        function changeView(view) {
+            currentView = view;
+            
+            // 简单的位置切换（后续可以加载不同场景）
+            if (view === 'office') {
+                camera.position.set(0, 2, 5);
+                officeGroup.visible = true;
+            } else if (view === 'study') {
+                camera.position.set(0, 2, 5);
+                // 后续添加书房场景
+            } else if (view === 'bedroom') {
+                camera.position.set(0, 2, 5);
+                // 后续添加卧室场景
+            }
+            
+            camera.lookAt(0, 0, 0);
+        }
+
+        function triggerRescue() {
+            alert('🆘 救援功能触发！\n\n正在保存当前状态...\n✓ 记忆已保存\n✓ 任务状态已保存\n✓ Git 提交完成\n\n救援完成！');
+        }
+
+        function updateUI() {
+            // 更新 Agent 列表
+            const agents = [
+                { name: '王总', status: 'working' },
+                { name: '小安', status: 'working' },
+                { name: '小智', status: 'working' },
+                { name: '小方', status: 'working' },
+                { name: '小文', status: 'working' },
+                { name: '订单专员', status: 'working' },
+                { name: '小财', status: 'working' },
+                { name: '小服', status: 'working' },
+                { name: '小仓', status: 'working' },
+                { name: '小研', status: 'working' }
+            ];
+
+            const agentsHtml = agents.map(agent => `
+                <div class="agent-item">
+                    <div class="agent-status ${agent.status}"></div>
+                    <span>${agent.name}</span>
+                </div>
+            `).join('');
+            document.getElementById('agents-list').innerHTML = agentsHtml;
+
+            // 每 30 秒更新状态
+            setInterval(() => {
+                document.getElementById('task-time').textContent = 
+                    `已进行：${Math.floor(Math.random() * 60) + 10} 分钟`;
+            }, 30000);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 虾老板浮动动画
+            if (shrimpBoss) {
+                const time = Date.now() * 0.001;
+                shrimpBoss.position.y = Math.sin(time + shrimpBoss.userData.floatOffset) * 0.1;
+                
+                // 触须轻微摆动
+                shrimpBoss.children.forEach(child => {
+                    if (child.geometry && child.geometry.type === 'CylinderGeometry') {
+                        child.rotation.z += Math.sin(time * 2) * 0.01;
+                    }
+                });
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 鼠标控制（简单旋转）
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        document.addEventListener('mousedown', () => isDragging = true);
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+
+                const deltaRotationQuaternion = new THREE.Quaternion()
+                    .setFromEuler(new THREE.Euler(
+                        toRadians(deltaMove.y * 0.5),
+                        toRadians(deltaMove.x * 0.5),
+                        0,
+                        'XYZ'
+                    ));
+
+                officeGroup.quaternion.multiplyQuaternions(deltaRotationQuaternion, officeGroup.quaternion);
+            }
+
+            previousMousePosition = { x: e.offsetX, y: e.offsetY };
+        });
+
+        function toRadians(angle) {
+            return angle * (Math.PI / 180);
+        }
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
