@@ -98,10 +98,16 @@
       _context.closePath();
       
       const color = material.color;
-      if (material.transparent) {
+      if (!color) {
+        _context.fillStyle = '#FF6B6B';
+      } else {
+        _context.fillStyle = '#' + color.getHexString();
+      }
+      
+      if (material.transparent && material.opacity !== undefined) {
         _context.globalAlpha = material.opacity;
       }
-      _context.fillStyle = '#' + color.getHexString();
+      
       _context.fill();
       _context.globalAlpha = 1;
     }
