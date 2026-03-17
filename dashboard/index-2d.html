@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾老板 3D 监控面板 - Canvas 2D 版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .header {
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            display: inline-block;
+            pointer-events: auto;
+        }
+        .header h1 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+        .status-badge {
+            display: inline-block;
+            background: rgba(39, 174, 96, 0.8);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .status-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 300px;
+            pointer-events: auto;
+        }
+        .status-panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #FF6B6B;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+        }
+        .status-item:last-child { border-bottom: none; }
+        .employees-panel {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 200px;
+            pointer-events: auto;
+        }
+        .employees-panel h2 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #FFE66D;
+        }
+        .employee-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+            font-size: 0.85rem;
+        }
+        .employee-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        #shrimp-canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="shrimp-canvas" width="400" height="400"></canvas>
+    </div>
+
+    <div class="ui-overlay">
+        <div class="header">
+            <h1>🦐 虾老板 3D 监控面板</h1>
+            <div class="status-badge">🟢 实时连接中</div>
+        </div>
+    </div>
+
+    <div class="status-panel">
+        <h2>📊 当前状态</h2>
+        <div class="status-item"><span>心情</span><span>😊 开心</span></div>
+        <div class="status-item"><span>位置</span><span>📍 办公室</span></div>
+        <div class="status-item"><span>效率</span><span>🟢 高效</span></div>
+        <div class="status-item"><span>阻塞</span><span>❌ 否</span></div>
+        <div class="status-item"><span>活跃 Agent</span><span>10/10</span></div>
+    </div>
+
+    <div class="employees-panel">
+        <h2>👥 10 人员工</h2>
+        <div id="employees-list"></div>
+    </div>
+
+    <script>
+        // 员工数据
+        const employees = [
+            { name: '王总', role: '副经理', color: '#E74C3C' },
+            { name: '小安', role: '安全运维', color: '#3498DB' },
+            { name: '小智', role: '产品', color: '#2ECC71' },
+            { name: '小方', role: '营销', color: '#F39C12' },
+            { name: '小文', role: '内容', color: '#9B59B6' },
+            { name: '订单专员', role: '订单', color: '#1ABC9C' },
+            { name: '小财', role: '财务', color: '#E67E22' },
+            { name: '小服', role: '客服', color: '#34495E' },
+            { name: '小仓', role: '仓储', color: '#7F8C8D' },
+            { name: '小研', role: '研发', color: '#16A085' }
+        ];
+
+        // 渲染员工列表
+        const employeesList = document.getElementById('employees-list');
+        employees.forEach(emp => {
+            const div = document.createElement('div');
+            div.className = 'employee-item';
+            div.innerHTML = `<span class="employee-color" style="background:${emp.color}"></span><span>${emp.name}</span>`;
+            employeesList.appendChild(div);
+        });
+
+        // Canvas 2D 绘制虾老板
+        const canvas = document.getElementById('shrimp-canvas');
+        const ctx = canvas.getContext('2d');
+        let time = 0;
+
+        function drawShrimp() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            time += 0.05;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // 身体（粉色椭圆）
+            ctx.fillStyle = '#FF6B6B';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, 80, 100, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 身体浮动动画
+            const floatY = Math.sin(time) * 5;
+
+            // 眼睛（白色）
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(centerX - 30, centerY - 30 + floatY, 20, 0, Math.PI * 2);
+            ctx.arc(centerX + 30, centerY - 30 + floatY, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 瞳孔（黑色）
+            ctx.fillStyle = '#000000';
+            const pupilX = Math.sin(time * 0.5) * 5;
+            const pupilY = Math.cos(time * 0.3) * 3;
+            ctx.beginPath();
+            ctx.arc(centerX - 30 + pupilX, centerY - 30 + floatY + pupilY, 8, 0, Math.PI * 2);
+            ctx.arc(centerX + 30 + pupilX, centerY - 30 + floatY + pupilY, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 眼睛高光
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(centerX - 35 + pupilX, centerY - 35 + floatY + pupilY, 4, 0, Math.PI * 2);
+            ctx.arc(centerX + 25 + pupilX, centerY - 35 + floatY + pupilY, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 眼镜
+            ctx.strokeStyle = '#2C3E50';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX - 30, centerY - 30 + floatY, 22, 0, Math.PI * 2);
+            ctx.arc(centerX + 30, centerY - 30 + floatY, 22, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(centerX - 8, centerY - 30 + floatY);
+            ctx.lineTo(centerX + 8, centerY - 30 + floatY);
+            ctx.stroke();
+
+            // 触须（左右各 5 节）
+            ctx.strokeStyle = '#FF6B6B';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            
+            // 左触须
+            for (let i = 0; i < 5; i++) {
+                const segmentX = centerX - 50 - i * 15 + Math.sin(time + i * 0.5) * 10;
+                const segmentY = centerY - 50 + floatY + i * 20;
+                ctx.beginPath();
+                if (i === 0) {
+                    ctx.moveTo(centerX - 60, centerY - 60 + floatY);
+                }
+                ctx.lineTo(segmentX, segmentY);
+                ctx.stroke();
+            }
+
+            // 右触须
+            for (let i = 0; i < 5; i++) {
+                const segmentX = centerX + 50 + i * 15 - Math.sin(time + i * 0.5) * 10;
+                const segmentY = centerY - 50 + floatY + i * 20;
+                ctx.beginPath();
+                if (i === 0) {
+                    ctx.moveTo(centerX + 60, centerY - 60 + floatY);
+                }
+                ctx.lineTo(segmentX, segmentY);
+                ctx.stroke();
+            }
+
+            // 尾巴
+            ctx.fillStyle = '#FF6B6B';
+            const tailWag = Math.sin(time * 2) * 20;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY + 80);
+            ctx.lineTo(centerX - 30 + tailWag, centerY + 130);
+            ctx.lineTo(centerX + 30 + tailWag, centerY + 130);
+            ctx.closePath();
+            ctx.fill();
+
+            // 领结
+            ctx.fillStyle = '#E74C3C';
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY + 50);
+            ctx.lineTo(centerX - 20, centerY + 40);
+            ctx.lineTo(centerX - 20, centerY + 60);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY + 50);
+            ctx.lineTo(centerX + 20, centerY + 40);
+            ctx.lineTo(centerX + 20, centerY + 60);
+            ctx.closePath();
+            ctx.fill();
+
+            // 状态文字
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🦐 虾老板 Canvas 2D 版', centerX, centerY + 160);
+            ctx.fillText('（无 WebGL 环境）', centerX, centerY + 180);
+
+            requestAnimationFrame(drawShrimp);
+        }
+
+        drawShrimp();
+
+        console.log('🦐 Canvas 2D 虾老板已启动！');
+    </script>
+</body>
+</html>
