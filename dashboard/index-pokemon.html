@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾老板智能大厦 - 宠物小精灵版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-room: #2d2d44;
+            --bg-room-hover: #3d3d5c;
+            --accent: #FF6B6B;
+            --text: #ffffff;
+            --text-dim: rgba(255,255,255,0.6);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: auto;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            background: rgba(0,0,0,0.4);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            background: rgba(39, 174, 96, 0.3);
+            color: #2ecc71;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 大房子 */
+        .building {
+            background: var(--bg-room);
+            border-radius: 20px;
+            border: 3px solid #4a4a6a;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .building-header {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #4a4a6a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .building-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* 房间网格 */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            background: #4a4a6a;
+        }
+
+        /* 单个房间 */
+        .room {
+            background: var(--bg-room);
+            aspect-ratio: 4/3;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .room:hover {
+            background: var(--bg-room-hover);
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .room-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .room-count {
+            background: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+        }
+
+        .room-floor {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 像素小人 */
+        .pixel-char {
+            width: 40px;
+            height: 40px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            transition: all 0.5s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .pixel-char:hover {
+            transform: scale(1.3);
+            z-index: 100;
+        }
+
+        .pixel-char svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 房间装饰 */
+        .room-decoration {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-room);
+            border-radius: 20px;
+            border: 3px solid var(--accent);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .char-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .char-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .char-avatar {
+            width: 50px;
+            height: 50px;
+        }
+
+        .char-info {
+            flex: 1;
+        }
+
+        .char-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .char-role {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .char-action {
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        /* 统计面板 */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-room);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #4a4a6a;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        /* 时间显示 */
+        .time-display {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .rooms-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .rooms-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画 */
+        @keyframes walk {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes working {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        @keyframes sleeping {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .char-walking { animation: walk 1s infinite; }
+        .char-working { animation: working 2s infinite; }
+        .char-sleeping { animation: sleeping 3s infinite; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="title">🦐 虾老板智能大厦</div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <div class="status-badge">实时连接中</div>
+            <div class="time-display" id="timeDisplay">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 大房子 -->
+        <div class="building">
+            <div class="building-header">
+                <div class="building-name">🏢 虾老板科技有限公司</div>
+                <div class="time-display" id="dateDisplay">----/--/--</div>
+            </div>
+            
+            <div class="rooms-grid" id="roomsGrid">
+                <!-- 房间由 JS 生成 -->
+            </div>
+        </div>
+
+        <!-- 统计面板 -->
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-value" id="totalChars">11</div>
+                <div class="stat-label">总人数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="workingCount">6</div>
+                <div class="stat-label">工作中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="restingCount">3</div>
+                <div class="stat-label">休息中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeRooms">6</div>
+                <div class="stat-label">活跃房间</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 房间详情弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">房间详情</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="char-list" id="modalCharList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置 ====================
+        const CONFIG = {
+            rooms: [
+                { id: 'office', name: '🏢 办公室', icon: '🏢', color: '#3498db', decoration: '💻' },
+                { id: 'gym', name: '💪 健身房', icon: '💪', color: '#e74c3c', decoration: '🏋️' },
+                { id: 'bedroom', name: '🛏️ 卧室', icon: '🛏️', color: '#9b59b6', decoration: '🌙' },
+                { id: 'tearoom', name: '☕ 茶歇间', icon: '☕', color: '#f39c12', decoration: '🍪' },
+                { id: 'meeting', name: '📋 会议室', icon: '📋', color: '#1abc9c', decoration: '📊' },
+                { id: 'gaming', name: '🎮 娱乐室', icon: '🎮', color: '#e67e22', decoration: '🎯' }
+            ],
+            characters: [
+                { id: 'boss', name: '虾老板', role: 'CEO', emoji: '🦐', color: '#FF6B6B', action: 'monitoring' },
+                { id: 'wang', name: '王总', role: '副经理', emoji: '👔', color: '#E74C3C', action: 'working' },
+                { id: 'an', name: '小安', role: '安全运维', emoji: '🛡️', color: '#3498DB', action: 'working' },
+                { id: 'zhi', name: '小智', role: '产品', emoji: '💡', color: '#2ECC71', action: 'working' },
+                { id: 'fang', name: '小方', role: '营销', emoji: '📢', color: '#F39C12', action: 'working' },
+                { id: 'wen', name: '小文', role: '内容', emoji: '✍️', color: '#9B59B6', action: 'working' },
+                { id: 'order', name: '订单专员', role: '订单', emoji: '📦', color: '#1ABC9C', action: 'working' },
+                { id: 'cai', name: '小财', role: '财务', emoji: '💰', color: '#E67E22', action: 'working' },
+                { id: 'fu', name: '小服', role: '客服', emoji: '🎧', color: '#34495E', action: 'resting' },
+                { id: 'cang', name: '小仓', role: '仓储', emoji: '📦', color: '#7F8C8D', action: 'resting' },
+                { id: 'yan', name: '小研', role: '研发', emoji: '🔧', color: '#16A085', action: 'resting' }
+            ],
+            roomActions: {
+                office: ['working', 'typing', 'meeting'],
+                gym: ['exercising', 'stretching', 'resting'],
+                bedroom: ['sleeping', 'reading', 'resting'],
+                tearoom: ['drinking', 'chatting', 'eating'],
+                meeting: ['presenting', 'discussing', 'listening'],
+                gaming: ['playing', 'watching', 'relaxing']
+            }
+        };
+
+        // 初始房间分配
+        let charRooms = {
+            boss: 'office',
+            wang: 'office',
+            an: 'office',
+            zhi: 'meeting',
+            fang: 'office',
+            wen: 'office',
+            order: 'office',
+            cai: 'office',
+            fu: 'tearoom',
+            cang: 'gym',
+            yan: 'bedroom'
+        };
+
+        // ==================== 像素小人 SVG 生成器 ====================
+        function createPixelCharSVG(char, size = 40) {
+            const colors = {
+                skin: '#FFDAB9',
+                hair: '#8B4513',
+                body: char.color,
+                eyes: '#000000',
+                mouth: '#FF6B6B'
+            };
+
+            return `
+                <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 身体 -->
+                    <rect x="10" y="22" width="20" height="14" rx="3" fill="${colors.body}"/>
+                    <!-- 头 -->
+                    <circle cx="20" cy="14" r="10" fill="${colors.skin}"/>
+                    <!-- 眼睛 -->
+                    <circle cx="16" cy="12" r="2.5" fill="${colors.eyes}"/>
+                    <circle cx="24" cy="12" r="2.5" fill="${colors.eyes}"/>
+                    <!-- 嘴巴 -->
+                    <path d="M 16 18 Q 20 21 24 18" stroke="${colors.mouth}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <!-- 虾老板特殊装饰 -->
+                    ${char.id === 'boss' ? `
+                        <!-- 眼镜 -->
+                        <circle cx="16" cy="12" r="4" stroke="#2C3E50" stroke-width="1.5" fill="none"/>
+                        <circle cx="24" cy="12" r="4" stroke="#2C3E50" stroke-width="1.5" fill="none"/>
+                        <line x1="20" y1="12" x2="20" y2="12" stroke="#2C3E50" stroke-width="1.5"/>
+                        <!-- 领结 -->
+                        <polygon points="20,20 17,23 20,24 23,23" fill="#E74C3C"/>
+                    ` : `
+                        <!-- 普通员工头发 -->
+                        <path d="M 10 10 Q 20 5 30 10 L 30 8 Q 20 3 10 8 Z" fill="${colors.hair}"/>
+                    `}
+                </svg>
+            `;
+        }
+
+        // ==================== 初始化 ====================
+        function init() {
+            renderRooms();
+            updateStats();
+            startTime();
+            
+            // 定时更新（模拟活动）
+            setInterval(() => {
+                randomActivity();
+                updateStats();
+            }, 10000);
+        }
+
+        // 渲染房间
+        function renderRooms() {
+            const grid = document.getElementById('roomsGrid');
+            grid.innerHTML = CONFIG.rooms.map(room => {
+                const charsInRoom = CONFIG.characters.filter(c => charRooms[c.id] === room.id);
+                const charsHTML = charsInRoom.map(char => `
+                    <div class="pixel-char char-${getCharActionClass(char.action)}" 
+                         onclick="showCharDetail('${char.id}')"
+                         title="${char.name} - ${char.role}">
+                        ${createPixelCharSVG(char)}
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="room" onclick="showRoomDetail('${room.id}')">
+                        <div class="room-header">
+                            <div class="room-name">${room.icon} ${room.name.split(' ')[1]}</div>
+                            <div class="room-count">${charsInRoom.length}</div>
+                        </div>
+                        <div class="room-floor">
+                            ${charsHTML}
+                            <div class="room-decoration">${room.decoration}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCharActionClass(action) {
+            if (action === 'sleeping' || action === 'resting') return 'sleeping';
+            if (action === 'working' || action === 'typing') return 'working';
+            return 'walking';
+        }
+
+        // 显示房间详情
+        function showRoomDetail(roomId) {
+            const room = CONFIG.rooms.find(r => r.id === roomId);
+            const charsInRoom = CONFIG.characters.filter(c => charRooms[c.id] === roomId);
+            
+            document.getElementById('modalTitle').textContent = `${room.icon} ${room.name}`;
+            
+            const charList = document.getElementById('modalCharList');
+            if (charsInRoom.length === 0) {
+                charList.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 2rem;">房间里没有人哦～</div>';
+            } else {
+                charList.innerHTML = charsInRoom.map(char => `
+                    <div class="char-item">
+                        <div class="char-avatar">${createPixelCharSVG(char, 50)}</div>
+                        <div class="char-info">
+                            <div class="char-name">${char.emoji} ${char.name}</div>
+                            <div class="char-role">${char.role}</div>
+                            <div class="char-action">${getActionText(char.action)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // 显示角色详情
+        function showCharDetail(charId) {
+            const char = CONFIG.characters.find(c => c.id === charId);
+            const room = CONFIG.rooms.find(r => r.id === charRooms[charId]);
+            
+            document.getElementById('modalTitle').textContent = `${char.emoji} ${char.name}`;
+            
+            document.getElementById('modalCharList').innerHTML = `
+                <div class="char-item" style="flex-direction: column; text-align: center;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 1rem;">
+                        ${createPixelCharSVG(char, 80)}
+                    </div>
+                    <div class="char-name" style="font-size: 1.2rem;">${char.emoji} ${char.name}</div>
+                    <div class="char-role">${char.role}</div>
+                    <div class="char-action" style="margin-top: 0.5rem;">📍 在${room.name}</div>
+                    <div class="char-action">${getActionText(char.action)}</div>
+                </div>
+            `;
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function getActionText(action) {
+            const actions = {
+                working: '💼 工作中',
+                typing: '⌨️ 打字中',
+                meeting: '📋 开会中',
+                exercising: '💪 健身中',
+                stretching: '🧘 拉伸中',
+                sleeping: '😴 睡觉中',
+                reading: '📖 阅读中',
+                resting: '☕ 休息中',
+                drinking: '🍵 喝茶中',
+                chatting: '💬 聊天中',
+                eating: '🍪 吃东西',
+                presenting: '📊 演示中',
+                discussing: '💭 讨论中',
+                listening: '👂 聆听中',
+                playing: '🎮 游戏中',
+                watching: '📺 观看中',
+                relaxing: '😌 放松中',
+                monitoring: '👀 监控中'
+            };
+            return actions[action] || action;
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // 更新统计
+        function updateStats() {
+            const working = CONFIG.characters.filter(c => ['working', 'typing', 'meeting', 'monitoring'].includes(c.action)).length;
+            const resting = CONFIG.characters.filter(c => ['resting', 'sleeping', 'reading'].includes(c.action)).length;
+            const activeRooms = new Set(Object.values(charRooms)).size;
+
+            document.getElementById('totalChars').textContent = CONFIG.characters.length;
+            document.getElementById('workingCount').textContent = working;
+            document.getElementById('restingCount').textContent = resting;
+            document.getElementById('activeRooms').textContent = activeRooms;
+        }
+
+        // 随机活动
+        function randomActivity() {
+            // 随机改变一个角色的动作
+            const char = CONFIG.characters[Math.floor(Math.random() * CONFIG.characters.length)];
+            const possibleActions = CONFIG.roomActions[charRooms[char.id]] || ['working'];
+            char.action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+            
+            renderRooms();
+        }
+
+        // 时间
+        function startTime() {
+            function update() {
+                const now = new Date();
+                document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+                document.getElementById('dateDisplay').textContent = now.toLocaleDateString('zh-CN');
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        });
+
+        // 启动
+        init();
+
+        console.log('🦐 虾老板智能大厦 - 宠物小精灵版已就绪！');
+    </script>
+</body>
+</html>
