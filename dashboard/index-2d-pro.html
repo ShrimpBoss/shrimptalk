@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾老板智能监控面板 - 2D 专业版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --light: #ffffff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            background: rgba(39, 174, 96, 0.3);
+            color: #2ecc71;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .time-display {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem 1.2rem;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.2rem;
+        }
+
+        /* 左侧面板 - 虾老板状态 */
+        .shrimp-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .shrimp-avatar {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .shrimp-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .status-item {
+            background: rgba(0,0,0,0.2);
+            padding: 0.8rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 0.3rem;
+        }
+
+        .status-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .mood-happy { color: #2ecc71; }
+        .mood-normal { color: #f39c12; }
+        .mood-busy { color: #e74c3c; }
+
+        /* 中间面板 - 场景展示 */
+        .scene-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scene-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .scene-tab {
+            padding: 0.6rem 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .scene-tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .scene-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .scene-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .scene-display {
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scene-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .scene-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .scene-desc {
+            color: rgba(255,255,255,0.6);
+            max-width: 400px;
+        }
+
+        /* 右侧面板 - 员工状态 */
+        .employees-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .employee-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .employee-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .employee-item:hover {
+            background: rgba(0,0,0,0.3);
+            transform: translateX(5px);
+        }
+
+        .employee-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .employee-info {
+            flex: 1;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .employee-role {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .employee-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-online { background: var(--success); }
+        .status-busy { background: var(--warning); }
+        .status-offline { background: var(--danger); }
+
+        /* 系统指标 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .metric-card {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 0.3rem;
+        }
+
+        /* 日志区域 */
+        .log-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .log-entry {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .log-time {
+            color: rgba(255,255,255,0.4);
+            min-width: 70px;
+        }
+
+        .log-info { color: var(--secondary); }
+        .log-warning { color: var(--warning); }
+        .log-error { color: var(--danger); }
+        .log-success { color: var(--success); }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+            .shrimp-panel {
+                grid-column: 1;
+            }
+            .scene-panel {
+                grid-column: 2;
+                grid-row: 1 / 3;
+            }
+            .employees-panel {
+                grid-column: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">🦐 虾老板智能监控面板</div>
+            <div class="status-badge">实时连接中</div>
+        </div>
+        <div class="header-right">
+            <div class="time-display" id="timeDisplay">--:--:--</div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 左侧：虾老板状态 -->
+        <aside class="shrimp-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🦐 虾老板状态</div>
+                </div>
+                <div class="card-body">
+                    <div class="shrimp-avatar">
+                        <canvas id="shrimpCanvas" class="shrimp-canvas"></canvas>
+                    </div>
+                    <div class="status-grid" style="margin-top: 1.5rem;">
+                        <div class="status-item">
+                            <div class="status-label">心情</div>
+                            <div class="status-value mood-happy" id="moodValue">😊 开心</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-label">位置</div>
+                            <div class="status-value" id="locationValue">📍 办公室</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-label">效率</div>
+                            <div class="status-value" id="efficiencyValue">🟢 高效</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-label">阻塞</div>
+                            <div class="status-value" id="blockedValue">❌ 否</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📊 系统指标</div>
+                </div>
+                <div class="card-body">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="agentCount">10</div>
+                            <div class="metric-label">在线 Agent</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="cronStatus" style="color: #2ecc71;">✅</div>
+                            <div class="metric-label">Cron 状态</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="memoryUsage">--</div>
+                            <div class="metric-label">内存使用</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="uptime">--</div>
+                            <div class="metric-label">运行时间</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间：场景展示 -->
+        <section class="scene-panel card">
+            <div class="card-header">
+                <div class="card-title">🎬 场景监控</div>
+            </div>
+            <div class="scene-tabs">
+                <div class="scene-tab active" data-scene="office">🏢 办公室</div>
+                <div class="scene-tab" data-scene="study">📚 书房</div>
+                <div class="scene-tab" data-scene="bedroom">🛏️ 卧室</div>
+            </div>
+            <div class="scene-content" id="sceneContent">
+                <div class="scene-display">
+                    <div class="scene-icon" id="sceneIcon">🏢</div>
+                    <div class="scene-title" id="sceneTitle">办公室</div>
+                    <div class="scene-desc" id="sceneDesc">虾老板正在处理日常事务，监控 10 人团队的工作状态</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右侧：员工状态和日志 -->
+        <aside class="employees-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">👥 10 人员工</div>
+                </div>
+                <div class="card-body">
+                    <div class="employee-list" id="employeeList"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📝 系统日志</div>
+                </div>
+                <div class="card-body">
+                    <div class="log-container" id="logContainer"></div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ==================== 配置 ====================
+        const CONFIG = {
+            employees: [
+                { name: '王总', role: '副经理', color: '#E74C3C', emoji: '👔', status: 'online' },
+                { name: '小安', role: '安全运维', color: '#3498DB', emoji: '🛡️', status: 'online' },
+                { name: '小智', role: '产品', color: '#2ECC71', emoji: '💡', status: 'online' },
+                { name: '小方', role: '营销', color: '#F39C12', emoji: '📢', status: 'online' },
+                { name: '小文', role: '内容', color: '#9B59B6', emoji: '✍️', status: 'online' },
+                { name: '订单专员', role: '订单', color: '#1ABC9C', emoji: '📦', status: 'online' },
+                { name: '小财', role: '财务', color: '#E67E22', emoji: '💰', status: 'online' },
+                { name: '小服', role: '客服', color: '#34495E', emoji: '🎧', status: 'online' },
+                { name: '小仓', role: '仓储', color: '#7F8C8D', emoji: '📦', status: 'online' },
+                { name: '小研', role: '研发', color: '#16A085', emoji: '🔧', status: 'online' }
+            ],
+            scenes: {
+                office: {
+                    icon: '🏢',
+                    title: '办公室',
+                    desc: '虾老板正在处理日常事务，监控 10 人团队的工作状态'
+                },
+                study: {
+                    icon: '📚',
+                    title: '书房',
+                    desc: '虾老板在学习新知识，为团队提供更智能的支持'
+                },
+                bedroom: {
+                    icon: '🛏️',
+                    title: '卧室',
+                    desc: '虾老板休息中，系统进入低功耗模式'
+                }
+            }
+        };
+
+        // ==================== 初始化 ====================
+        let currentScene = 'office';
+        let time = 0;
+
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 渲染员工列表
+        function renderEmployees() {
+            const container = document.getElementById('employeeList');
+            container.innerHTML = CONFIG.employees.map(emp => `
+                <div class="employee-item">
+                    <div class="employee-avatar" style="background: ${emp.color}">${emp.name[0]}</div>
+                    <div class="employee-info">
+                        <div class="employee-name">${emp.emoji} ${emp.name}</div>
+                        <div class="employee-role">${emp.role}</div>
+                    </div>
+                    <div class="employee-status status-${emp.status}"></div>
+                </div>
+            `).join('');
+        }
+        renderEmployees();
+
+        // 场景切换
+        document.querySelectorAll('.scene-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentScene = tab.dataset.scene;
+                updateScene(currentScene);
+            });
+        });
+
+        function updateScene(scene) {
+            const s = CONFIG.scenes[scene];
+            document.getElementById('sceneIcon').textContent = s.icon;
+            document.getElementById('sceneTitle').textContent = s.title;
+            document.getElementById('sceneDesc').textContent = s.desc;
+            addLog(`切换到${s.title}场景`, 'info');
+        }
+
+        // 日志系统
+        function addLog(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const now = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">${now}</span>
+                <span class="log-${type}">${message}</span>
+            `;
+            container.insertBefore(entry, container.firstChild);
+            if (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        // ==================== 虾老板 Canvas 动画 ====================
+        function initShrimpCanvas() {
+            const canvas = document.getElementById('shrimpCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置画布大小
+            const size = 200;
+            canvas.width = size;
+            canvas.height = size;
+
+            let animationFrame = 0;
+
+            function draw() {
+                ctx.clearRect(0, 0, size, size);
+                animationFrame += 0.05;
+
+                const centerX = size / 2;
+                const centerY = size / 2;
+                const floatY = Math.sin(animationFrame) * 5;
+
+                // 身体
+                ctx.fillStyle = '#FF6B6B';
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY + floatY, 60, 75, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 眼睛
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(centerX - 22, centerY - 22 + floatY, 15, 0, Math.PI * 2);
+                ctx.arc(centerX + 22, centerY - 22 + floatY, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 瞳孔
+                const pupilX = Math.sin(animationFrame * 0.5) * 3;
+                const pupilY = Math.cos(animationFrame * 0.3) * 2;
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(centerX - 22 + pupilX, centerY - 22 + floatY + pupilY, 6, 0, Math.PI * 2);
+                ctx.arc(centerX + 22 + pupilX, centerY - 22 + floatY + pupilY, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 高光
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(centerX - 26 + pupilX, centerY - 26 + floatY + pupilY, 3, 0, Math.PI * 2);
+                ctx.arc(centerX + 18 + pupilX, centerY - 26 + floatY + pupilY, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 眼镜
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX - 22, centerY - 22 + floatY, 17, 0, Math.PI * 2);
+                ctx.arc(centerX + 22, centerY - 22 + floatY, 17, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(centerX - 5, centerY - 22 + floatY);
+                ctx.lineTo(centerX + 5, centerY - 22 + floatY);
+                ctx.stroke();
+
+                // 触须
+                ctx.strokeStyle = '#FF6B6B';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                
+                for (let side = -1; side <= 1; side += 2) {
+                    for (let i = 0; i < 4; i++) {
+                        const baseX = centerX + side * 45;
+                        const baseY = centerY - 40 + floatY + i * 15;
+                        const wave = Math.sin(animationFrame + i * 0.5) * 8 * side;
+                        
+                        ctx.beginPath();
+                        if (i === 0) {
+                            ctx.moveTo(centerX + side * 50, centerY - 50 + floatY);
+                        }
+                        ctx.lineTo(baseX + wave, baseY);
+                        ctx.stroke();
+                    }
+                }
+
+                // 尾巴
+                const tailWag = Math.sin(animationFrame * 2) * 15;
+                ctx.fillStyle = '#FF6B6B';
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY + 60);
+                ctx.lineTo(centerX - 22 + tailWag, centerY + 100);
+                ctx.lineTo(centerX + 22 + tailWag, centerY + 100);
+                ctx.closePath();
+                ctx.fill();
+
+                // 领结
+                ctx.fillStyle = '#E74C3C';
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY + 40);
+                ctx.lineTo(centerX - 15, centerY + 32);
+                ctx.lineTo(centerX - 15, centerY + 48);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY + 40);
+                ctx.lineTo(centerX + 15, centerY + 32);
+                ctx.lineTo(centerX + 15, centerY + 48);
+                ctx.closePath();
+                ctx.fill();
+
+                requestAnimationFrame(draw);
+            }
+
+            draw();
+        }
+
+        initShrimpCanvas();
+
+        // ==================== 模拟数据更新 ====================
+        function updateMetrics() {
+            // 模拟内存使用
+            const memUsage = (Math.random() * 20 + 40).toFixed(1);
+            document.getElementById('memoryUsage').textContent = memUsage + '%';
+            
+            // 模拟运行时间
+            const hours = Math.floor(time / 60);
+            const mins = Math.floor(time % 60);
+            document.getElementById('uptime').textContent = `${hours}h ${mins}m`;
+            
+            time += 0.1;
+        }
+        setInterval(updateMetrics, 1000);
+        updateMetrics();
+
+        // ==================== 初始化日志 ====================
+        addLog('🦐 虾老板监控面板已启动', 'success');
+        addLog('✅ 10 人员工全部在线', 'success');
+        addLog('✅ Cron 作业正常运行', 'success');
+        addLog('✅ 系统稳定性 100%', 'success');
+        addLog('📊 开始实时监控...', 'info');
+
+        console.log('🦐 虾老板 2D 专业版监控面板已就绪！');
+    </script>
+</body>
+</html>
