@@ -58,7 +58,11 @@
       const _renderData = _projector.projectScene(scene, camera, this.autoSort, this.autoSort);
       const _elements = _renderData.elements;
       
+      console.log('🦐 CanvasRenderer: 场景对象数量:', _renderData.objects ? _renderData.objects.length : 'undefined');
       console.log('🦐 CanvasRenderer: 渲染元素数量:', _elements.length);
+      if (_elements.length > 0) {
+        console.log('🦐 CanvasRenderer: 第一个元素类型:', _elements[0].constructor.name);
+      }
       
       this.clear();
       
