@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦐 虾老板智能大厦 v3.0 - 可爱版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-dark: #0a0a15;
+            --bg-room: #151525;
+            --bg-floor: #1a1a2e;
+            --accent: #FF6B9D;
+            --text: #ffffff;
+            --text-dim: rgba(255,255,255,0.6);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a3e 50%, #0f0f25 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: auto;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            background: linear-gradient(180deg, rgba(255,107,157,0.2) 0%, rgba(0,0,0,0) 100%);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,157,0.3);
+        }
+
+        .title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            text-shadow: 0 0 20px rgba(255,107,157,0.5);
+        }
+
+        .status-badge {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 4px 15px rgba(46,204,113,0.4);
+            animation: statusGlow 2s infinite;
+        }
+
+        @keyframes statusGlow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(46,204,113,0.4); }
+            50% { box-shadow: 0 4px 25px rgba(46,204,113,0.6); }
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 大房子 */
+        .building {
+            background: linear-gradient(180deg, var(--bg-room) 0%, var(--bg-floor) 100%);
+            border-radius: 25px;
+            border: 2px solid rgba(255,107,157,0.3);
+            overflow: hidden;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.6), inset 0 0 100px rgba(255,107,157,0.05);
+        }
+
+        .building-header {
+            background: rgba(0,0,0,0.4);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .building-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 房间网格 */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            background: rgba(255,255,255,0.05);
+            padding: 2px;
+        }
+
+        /* 单个房间 */
+        .room {
+            background: var(--bg-room);
+            min-height: 400px;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .room:hover {
+            background: linear-gradient(180deg, #202035 0%, #1a1a2e 100%);
+            border-color: rgba(255,107,157,0.5);
+            transform: translateY(-3px);
+            z-index: 10;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .room-header {
+            background: rgba(0,0,0,0.3);
+            padding: 0.8rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .room-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .room-count {
+            background: linear-gradient(135deg, var(--accent), #FF8EAC);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 15px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(255,107,157,0.4);
+        }
+
+        /* 房间地板 */
+        .room-floor {
+            flex: 1;
+            background: linear-gradient(180deg, var(--bg-floor) 0%, #151525 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        /* 地板网格 */
+        .floor-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 25px 25px;
+            pointer-events: none;
+        }
+
+        /* 可爱角色 */
+        .cute-char {
+            width: 55px;
+            height: 55px;
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        .cute-char:hover {
+            transform: scale(1.15) translateY(-5px);
+            z-index: 100;
+            filter: drop-shadow(0 8px 20px rgba(255,107,157,0.5));
+        }
+
+        /* 对话气泡 - 可爱版 */
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            color: #333;
+            padding: 0.6rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 200;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: bubbleFloat 2.5s ease-in-out infinite;
+            font-weight: 500;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+
+        @keyframes bubbleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* 虾老板监控台 - 可爱版 */
+        .boss-station {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+        }
+
+        .boss-desk {
+            width: 120px;
+            height: 50px;
+            background: linear-gradient(180deg, #8B4513, #654321);
+            border-radius: 8px 8px 5px 5px;
+            border: 3px solid #4a3020;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .boss-monitors {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .boss-monitor {
+            width: 30px;
+            height: 25px;
+            background: #2C3E50;
+            border-radius: 4px;
+            border: 2px solid #1a252f;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boss-monitor::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: linear-gradient(135deg, #3498DB, #2ECC71);
+            border-radius: 2px;
+            animation: monitorGlow 2s infinite;
+        }
+
+        @keyframes monitorGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; box-shadow: 0 0 15px rgba(52,152,219,0.6); }
+        }
+
+        /* 统计面板 */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(180deg, var(--bg-room) 0%, var(--bg-floor) 100%);
+            padding: 1.8rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid rgba(255,107,157,0.2);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #FF8EAC);
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(255,107,157,0.3);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--accent), #FF8EAC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        /* 时间显示 */
+        .time-display {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, var(--bg-room) 0%, var(--bg-floor) 100%);
+            border-radius: 25px;
+            border: 3px solid var(--accent);
+            max-width: 650px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.7);
+        }
+
+        .modal-header {
+            background: linear-gradient(180deg, rgba(255,107,157,0.2) 0%, rgba(0,0,0,0) 100%);
+            padding: 1.2rem 1.5rem;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.3s;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+        }
+
+        .modal-close:hover {
+            color: var(--accent);
+            background: rgba(255,107,157,0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .rooms-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .rooms-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 可爱动画 */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        @keyframes happy {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes working {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+        @keyframes sleeping {
+            0%, 100% { opacity: 0.95; }
+            50% { opacity: 0.85; }
+        }
+
+        .char-breathe { animation: breathe 3s ease-in-out infinite; }
+        .char-happy { animation: happy 1s ease-in-out infinite; }
+        .char-working { animation: working 2s ease-in-out infinite; }
+        .char-sleeping { animation: sleeping 3s ease-in-out infinite; }
+        .char-exercising { animation: happy 0.5s ease-in-out infinite; }
+
+        /* 家具 - 可爱版 */
+        .furniture {
+            position: absolute;
+            image-rendering: smooth;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
+        }
+
+        .desk {
+            width: 65px;
+            height: 45px;
+            background: linear-gradient(180deg, #A0522D, #8B4513);
+            border-radius: 6px;
+            border: 2px solid #654321;
+        }
+
+        .computer {
+            width: 35px;
+            height: 30px;
+            background: linear-gradient(180deg, #34495E, #2C3E50);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .computer::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: linear-gradient(135deg, #3498DB, #5DADE2);
+            border-radius: 3px;
+            animation: screenGlow 2.5s infinite;
+        }
+
+        @keyframes screenGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; box-shadow: 0 0 12px rgba(52,152,219,0.6); }
+        }
+
+        .bed {
+            width: 75px;
+            height: 55px;
+            background: linear-gradient(180deg, #5DADE2, #3498DB);
+            border-radius: 10px;
+            border: 3px solid #2980B9;
+            position: relative;
+        }
+
+        .bed::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 28px;
+            height: 18px;
+            background: linear-gradient(180deg, #ECF0F1, #BDC3C7);
+            border-radius: 4px;
+        }
+
+        .gym-equipment {
+            width: 55px;
+            height: 40px;
+            background: linear-gradient(180deg, #E74C3C, #C0392B);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .coffee-machine {
+            width: 40px;
+            height: 50px;
+            background: linear-gradient(180deg, #E67E22, #D35400);
+            border-radius: 6px 6px 4px 4px;
+            position: relative;
+        }
+
+        .coffee-machine::before {
+            content: '☕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.3rem;
+        }
+
+        .round-table {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(180deg, #A0522D, #8B4513);
+            border-radius: 50%;
+            border: 3px solid #654321;
+        }
+
+        .whiteboard {
+            width: 65px;
+            height: 45px;
+            background: linear-gradient(180deg, #ECF0F1, #BDC3C7);
+            border: 3px solid #95A5A6;
+            border-radius: 5px;
+        }
+
+        .tv {
+            width: 65px;
+            height: 45px;
+            background: linear-gradient(180deg, #2C3E50, #1a252f);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tv::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            background: linear-gradient(135deg, #9B59B6, #3498DB, #2ECC71);
+            border-radius: 4px;
+            animation: tvScreen 1.5s infinite;
+        }
+
+        @keyframes tvScreen {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .sofa {
+            width: 75px;
+            height: 40px;
+            background: linear-gradient(180deg, #9B59B6, #8E44AD);
+            border-radius: 8px 8px 5px 5px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="title">🦐 虾老板智能大厦 <span style="font-size: 0.85rem; opacity: 0.8; font-weight: normal;">| v3.0 可爱版</span></div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <div class="status-badge">实时连接中</div>
+            <div class="time-display" id="timeDisplay">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 大房子 -->
+        <div class="building">
+            <div class="building-header">
+                <div class="building-name">🏢 虾老板科技有限公司</div>
+                <div class="time-display" id="dateDisplay">----/--/--</div>
+            </div>
+            
+            <div class="rooms-grid" id="roomsGrid">
+                <!-- 房间由 JS 生成 -->
+            </div>
+        </div>
+
+        <!-- 统计面板 -->
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-value" id="totalChars">11</div>
+                <div class="stat-label">👥 总人数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="workingCount">8</div>
+                <div class="stat-label">💼 工作中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="restingCount">3</div>
+                <div class="stat-label">☕ 休息中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeRooms">6</div>
+                <div class="stat-label">🏠 活跃房间</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 房间详情弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">房间详情</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="char-list" id="modalCharList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置 ====================
+        const CONFIG = {
+            rooms: [
+                { id: 'office', name: '🏢 办公室', icon: '🏢', color: '#3498db', decoration: '💻' },
+                { id: 'gym', name: '💪 健身房', icon: '💪', color: '#e74c3c', decoration: '🏋️' },
+                { id: 'bedroom', name: '🛏️ 卧室', icon: '🛏️', color: '#9b59b6', decoration: '🌙' },
+                { id: 'tearoom', name: '☕ 茶歇间', icon: '☕', color: '#f39c12', decoration: '🍪' },
+                { id: 'meeting', name: '📋 会议室', icon: '📋', color: '#1abc9c', decoration: '📊' },
+                { id: 'gaming', name: '🎮 娱乐室', icon: '🎮', color: '#e67e22', decoration: '🎯' }
+            ],
+            characters: [
+                { id: 'boss', name: '虾老板', role: 'CEO', emoji: '🦐', color: '#FF6B9D', action: 'monitoring', room: 'office' },
+                { id: 'wang', name: '王总', role: '副经理', emoji: '👔', color: '#E74C3C', action: 'working', room: 'office' },
+                { id: 'an', name: '小安', role: '安全运维', emoji: '🛡️', color: '#3498DB', action: 'working', room: 'office' },
+                { id: 'zhi', name: '小智', role: '产品', emoji: '💡', color: '#2ECC71', action: 'meeting', room: 'meeting' },
+                { id: 'fang', name: '小方', role: '营销', emoji: '📢', color: '#F39C12', action: 'working', room: 'office' },
+                { id: 'wen', name: '小文', role: '内容', emoji: '✍️', color: '#9B59B6', action: 'working', room: 'office' },
+                { id: 'order', name: '订单专员', role: '订单', emoji: '📦', color: '#1ABC9C', action: 'working', room: 'office' },
+                { id: 'cai', name: '小财', role: '财务', emoji: '💰', color: '#E67E22', action: 'working', room: 'office' },
+                { id: 'fu', name: '小服', role: '客服', emoji: '🎧', color: '#34495E', action: 'resting', room: 'tearoom' },
+                { id: 'cang', name: '小仓', role: '仓储', emoji: '📦', color: '#7F8C8D', action: 'exercising', room: 'gym' },
+                { id: 'yan', name: '小研', role: '研发', emoji: '🔧', color: '#16A085', action: 'sleeping', room: 'bedroom' }
+            ],
+            dialogues: {
+                working: ['这个需求有点意思...', '代码写起来～', '让我想想怎么优化', 'Bug 哪里跑！', '专注工作中 💻'],
+                meeting: ['这个方案不错', '我补充一下', '数据支持呢？', '下周能完成吗？', '📊 讨论中'],
+                resting: ['来杯咖啡提提神', '休息一下～', '聊聊天真开心', '吃点零食', '☕ 放松时间'],
+                exercising: ['再来一组！', '健身使人快乐', '坚持就是胜利', '💪💪💪', '运动最棒啦'],
+                sleeping: ['Zzz...', '好困啊', '午睡时间', '😴', '做个好梦'],
+                monitoring: ['一切正常', '让我看看大家在干嘛', '监控中...', '👀', '虾老板在线']
+            }
+        };
+
+        // ==================== 可爱角色 SVG 生成器 ====================
+        function createCuteCharSVG(char, size = 55) {
+            const isBoss = char.id === 'boss';
+            
+            return `
+                <svg viewBox="0 0 55 55" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 身体（圆润可爱） -->
+                    <ellipse cx="27.5" cy="38" rx="16" ry="13" fill="${char.color}"/>
+                    
+                    <!-- 头部（大头小身比例） -->
+                    <circle cx="27.5" cy="20" r="14" fill="#FFDAB9"/>
+                    
+                    <!-- 腮红（可爱要素） -->
+                    <ellipse cx="19" cy="22" rx="3" ry="2" fill="#FFB6C1" opacity="0.6"/>
+                    <ellipse cx="36" cy="22" rx="3" ry="2" fill="#FFB6C1" opacity="0.6"/>
+                    
+                    <!-- 大眼睛（带高光） -->
+                    <ellipse cx="21" cy="18" rx="5" ry="6" fill="#2C3E50"/>
+                    <ellipse cx="34" cy="18" rx="5" ry="6" fill="#2C3E50"/>
+                    <circle cx="22" cy="16" r="2.5" fill="white"/>
+                    <circle cx="35" cy="16" r="2.5" fill="white"/>
+                    
+                    <!-- 小嘴巴 -->
+                    <path d="M 23 25 Q 27.5 29 32 25" stroke="#FF6B9D" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    
+                    <!-- 虾老板特殊装饰 -->
+                    ${isBoss ? `
+                        <!-- 眼镜 -->
+                        <circle cx="21" cy="18" r="6.5" stroke="#2C3E50" stroke-width="2" fill="none" opacity="0.8"/>
+                        <circle cx="34" cy="18" r="6.5" stroke="#2C3E50" stroke-width="2" fill="none" opacity="0.8"/>
+                        <line x1="27.5" y1="18" x2="27.5" y2="18" stroke="#2C3E50" stroke-width="2"/>
+                        <!-- 领结 -->
+                        <polygon points="27.5,30 23,34 27.5,36 32,34" fill="#E74C3C"/>
+                        <!-- 虾须 -->
+                        <path d="M 15 15 Q 8 10 5 12" stroke="#FF6B9D" stroke-width="2" fill="none"/>
+                        <path d="M 40 15 Q 47 10 50 12" stroke="#FF6B9D" stroke-width="2" fill="none"/>
+                    ` : `
+                        <!-- 普通员工头发 -->
+                        <path d="M 13 16 Q 27.5 8 42 16 L 42 12 Q 27.5 4 13 12 Z" fill="#8B4513"/>
+                    `}
+                    
+                    <!-- 小手 -->
+                    <ellipse cx="14" cy="38" rx="4" ry="5" fill="${char.color}" filter="brightness(0.9)"/>
+                    <ellipse cx="41" cy="38" rx="4" ry="5" fill="${char.color}" filter="brightness(0.9)"/>
+                </svg>
+            `;
+        }
+
+        // ==================== 初始化 ====================
+        function init() {
+            renderRooms();
+            updateStats();
+            startTime();
+            
+            // 定时更新
+            setInterval(() => {
+                randomActivity();
+                updateStats();
+            }, 20000);
+        }
+
+        // 渲染房间
+        function renderRooms() {
+            const grid = document.getElementById('roomsGrid');
+            grid.innerHTML = CONFIG.rooms.map(room => {
+                const charsInRoom = CONFIG.characters.filter(c => c.room === room.id);
+                
+                const charsHTML = charsInRoom.map((char, i) => {
+                    const x = 18 + (i % 3) * 28;
+                    const y = 35 + Math.floor(i / 3) * 40;
+                    const bubbleText = CONFIG.dialogues[char.action]?.[Math.floor(Math.random() * CONFIG.dialogues[char.action].length)];
+                    
+                    return `
+                        <div class="cute-char char-${getCharActionClass(char.action)}" 
+                             style="left: ${x}%; top: ${y}%;"
+                             onclick="event.stopPropagation(); showCharDetail('${char.id}')">
+                            ${createCuteCharSVG(char)}
+                            ${bubbleText ? `<div class="speech-bubble">${bubbleText}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="room" onclick="showRoomDetail('${room.id}')">
+                        <div class="room-header">
+                            <div class="room-name">${room.icon} ${room.name.split(' ')[1]}</div>
+                            <div class="room-count">${charsInRoom.length}</div>
+                        </div>
+                        <div class="room-floor">
+                            <div class="floor-grid"></div>
+                            ${charsHTML}
+                            ${room.id === 'office' ? `
+                                <div class="boss-station">
+                                    <div class="boss-desk">
+                                        <div class="boss-monitors">
+                                            <div class="boss-monitor"></div>
+                                            <div class="boss-monitor"></div>
+                                            <div class="boss-monitor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCharActionClass(action) {
+            if (action === 'sleeping' || action === 'resting') return 'sleeping';
+            if (action === 'working' || action === 'typing' || action === 'monitoring') return 'working';
+            if (action === 'exercising') return 'exercising';
+            return 'happy';
+        }
+
+        // 显示房间详情
+        function showRoomDetail(roomId) {
+            const room = CONFIG.rooms.find(r => r.id === roomId);
+            const charsInRoom = CONFIG.characters.filter(c => c.room === roomId);
+            
+            document.getElementById('modalTitle').textContent = `${room.icon} ${room.name}`;
+            
+            const charList = document.getElementById('modalCharList');
+            if (charsInRoom.length === 0) {
+                charList.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 3rem; font-size: 1.2rem;">🚪 房间里没有人哦～</div>';
+            } else {
+                charList.innerHTML = charsInRoom.map(char => `
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 15px; margin-bottom: 0.8rem; transition: all 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+                        <div style="width: 55px; height: 55px;">${createCuteCharSVG(char, 55)}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 1.1rem;">${char.emoji} ${char.name}</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">${char.role}</div>
+                            <div style="color: var(--accent); font-size: 0.85rem; margin-top: 0.3rem;">${getActionText(char.action)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // 显示角色详情
+        function showCharDetail(charId) {
+            const char = CONFIG.characters.find(c => c.id === charId);
+            const room = CONFIG.rooms.find(r => r.id === char.room);
+            const bubbleText = CONFIG.dialogues[char.action]?.[0];
+            
+            document.getElementById('modalTitle').textContent = `${char.emoji} ${char.name}`;
+            
+            document.getElementById('modalCharList').innerHTML = `
+                <div style="text-align: center;">
+                    <div style="width: 120px; height: 120px; margin: 0 auto 1.5rem; animation: breathe 3s ease-in-out infinite;">
+                        ${createCuteCharSVG(char, 120)}
+                    </div>
+                    <div style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem;">${char.emoji} ${char.name}</div>
+                    <div style="color: rgba(255,255,255,0.6); margin-bottom: 1.5rem;">${char.role}</div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 15px; margin-bottom: 1rem;">
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">📍 当前位置</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.3rem;">${room.icon} ${room.name}</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 15px; margin-bottom: 1rem;">
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">💬 正在说</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.3rem; color: var(--accent);">"${bubbleText || '...'}"</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 15px;">
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">🎯 状态</div>
+                        <div style="font-size: 1.1rem; margin-top: 0.3rem;">${getActionText(char.action)}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function getActionText(action) {
+            const actions = {
+                working: '💼 工作中', typing: '⌨️ 打字中', meeting: '📋 开会中',
+                exercising: '💪 健身中', stretching: '🧘 拉伸中',
+                sleeping: '😴 睡觉中', reading: '📖 阅读中', resting: '☕ 休息中',
+                drinking: '🍵 喝茶中', chatting: '💬 聊天中', eating: '🍪 吃东西',
+                presenting: '📊 演示中', discussing: '💭 讨论中', listening: '👂 聆听中',
+                playing: '🎮 游戏中', watching: '📺 观看中', relaxing: '😌 放松中',
+                monitoring: '👀 监控中'
+            };
+            return actions[action] || action;
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // 更新统计
+        function updateStats() {
+            const working = CONFIG.characters.filter(c => ['working', 'typing', 'meeting', 'monitoring'].includes(c.action)).length;
+            const resting = CONFIG.characters.filter(c => ['resting', 'sleeping', 'reading'].includes(c.action)).length;
+            const activeRooms = new Set(CONFIG.characters.map(c => c.room)).size;
+
+            document.getElementById('totalChars').textContent = CONFIG.characters.length;
+            document.getElementById('workingCount').textContent = working;
+            document.getElementById('restingCount').textContent = resting;
+            document.getElementById('activeRooms').textContent = activeRooms;
+        }
+
+        // 随机活动
+        function randomActivity() {
+            const char = CONFIG.characters[Math.floor(Math.random() * CONFIG.characters.length)];
+            const possibleActions = Object.keys(CONFIG.dialogues);
+            char.action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+            renderRooms();
+        }
+
+        // 时间
+        function startTime() {
+            function update() {
+                const now = new Date();
+                document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+                document.getElementById('dateDisplay').textContent = now.toLocaleDateString('zh-CN');
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        });
+
+        // 启动
+        init();
+
+        console.log('🦐 虾老板智能大厦 v3.0 可爱版已就绪！');
+    </script>
+</body>
+</html>
