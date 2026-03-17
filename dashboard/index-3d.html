@@ -398,10 +398,26 @@
         </div>
     </div>
 
-    <!-- Three.js -->
+    <!-- Three.js r128 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- CanvasRenderer fallback (local versions for non-WebGL browsers) -->
+    <script src="Projector.js"></script>
+    <script src="CanvasRenderer.js"></script>
     
     <script>
+        // ==================== WebGL 检测 ====================
+        function detectWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        const HAS_WEBGL = detectWebGL();
+        console.log('🦐 WebGL 支持:', HAS_WEBGL);
+        
         // ==================== 配置 ====================
         const CONFIG = {
             // 10 个员工配置（几何体形象 + 颜色 + 图标）
@@ -462,6 +478,21 @@
             activeAgents: 10,
             lastUpdate: Date.now()
         };
+        
+        // ==================== 材质辅助函数（兼容 Canvas 渲染器）====================
+        function createMaterial(params) {
+            var matParams = { color: params.color !== undefined ? params.color : 0xffffff };
+            if (params.transparent !== undefined) matParams.transparent = params.transparent;
+            if (params.opacity !== undefined) matParams.opacity = params.opacity;
+            if (params.shininess !== undefined) matParams.shininess = params.shininess;
+            
+            if (HAS_WEBGL) {
+                return new THREE.MeshPhongMaterial(matParams);
+            } else {
+                // CanvasRenderer 只能用 MeshBasicMaterial
+                return new THREE.MeshBasicMaterial(matParams);
+            }
+        }
 
         // ==================== 初始化 ====================
         function init() {
@@ -475,10 +506,22 @@
             camera.position.set(0, 2, 5);
             camera.lookAt(0, 0, 0);
 
-            // 创建渲染器
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
+            // 创建渲染器（根据 WebGL 支持情况选择）
+            if (HAS_WEBGL) {
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                console.log('🦐 使用 WebGL 渲染器');
+            } else {
+                renderer = new THREE.CanvasRenderer({ alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                console.log('🦐 WebGL 不可用，降级到 Canvas 渲染器');
+                // 更新加载提示
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<div style="color: #f39c12; font-size: 1rem;">⚠️ WebGL 不可用，使用 2D Canvas 模式</div><div style="margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6);">部分 3D 效果可能受限</div>';
+                }
+            }
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             // 添加灯光
@@ -525,7 +568,7 @@
 
             // 身体（粉色椭球体）
             const bodyGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-            const bodyMaterial = new THREE.MeshPhongMaterial({ 
+            const bodyMaterial = createMaterial({ 
                 color: 0xFF6B6B,
                 transparent: true,
                 opacity: 0.9,
@@ -538,7 +581,7 @@
 
             // 眼睛
             const eyeGeometry = new THREE.SphereGeometry(0.15, 32, 32);
-            const eyeMaterial = new THREE.MeshPhongMaterial({ 
+            const eyeMaterial = createMaterial({ 
                 color: 0xffffff,
                 shininess: 100
             });
@@ -553,7 +596,7 @@
 
             // 瞳孔
             const pupilGeometry = new THREE.SphereGeometry(0.07, 32, 32);
-            const pupilMaterial = new THREE.MeshPhongMaterial({ 
+            const pupilMaterial = createMaterial({ 
                 color: 0x000000,
                 shininess: 100
             });
@@ -568,7 +611,7 @@
 
             // 眼睛高光
             const highlightGeometry = new THREE.SphereGeometry(0.04, 16, 16);
-            const highlightMaterial = new THREE.MeshPhongMaterial({ 
+            const highlightMaterial = createMaterial({ 
                 color: 0xffffff,
                 emissive: 0xffffff,
                 emissiveIntensity: 0.8,
@@ -585,7 +628,7 @@
 
             // 眼镜
             const glassesGeometry = new THREE.TorusGeometry(0.18, 0.02, 16, 32);
-            const glassesMaterial = new THREE.MeshPhongMaterial({ 
+            const glassesMaterial = createMaterial({ 
                 color: 0x2C3E50,
                 shininess: 50
             });
@@ -600,7 +643,7 @@
 
             // 领结
             const bowGeometry = new THREE.ConeGeometry(0.15, 0.1, 4);
-            const bowMaterial = new THREE.MeshPhongMaterial({ 
+            const bowMaterial = createMaterial({ 
                 color: 0xE74C3C,
                 shininess: 50
             });
@@ -612,7 +655,7 @@
             // 触须
             const tentacleSegments = 5;
             const tentacleRadius = 0.025;
-            const tentacleMaterial = new THREE.MeshPhongMaterial({ 
+            const tentacleMaterial = createMaterial({ 
                 color: 0xFF6B6B,
                 shininess: 80
             });
@@ -642,7 +685,7 @@
             const tailSegments = 4;
             for (let i = 0; i < tailSegments; i++) {
                 const tailSegmentGeometry = new THREE.SphereGeometry(0.15 * (1 - i * 0.15), 16, 16);
-                const tailSegmentMaterial = new THREE.MeshPhongMaterial({ 
+                const tailSegmentMaterial = createMaterial({ 
                     color: 0xFF6B6B,
                     shininess: 80
                 });
@@ -668,7 +711,7 @@
 
             // 地板
             const floorGeometry = new THREE.PlaneGeometry(10, 10);
-            const floorMaterial = new THREE.MeshPhongMaterial({ 
+            const floorMaterial = createMaterial({ 
                 color: 0x34495E,
                 side: THREE.DoubleSide,
                 shininess: 150,
@@ -684,14 +727,14 @@
 
             // 墙壁
             const backWallGeometry = new THREE.PlaneGeometry(10, 6);
-            const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xECF0F1 });
+            const wallMaterial = createMaterial({ color: 0xECF0F1 });
             const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
             backWall.position.set(0, 2, -2);
             officeGroup.add(backWall);
 
             // 桌子
             const deskTopGeometry = new THREE.BoxGeometry(3, 0.1, 1.5);
-            const deskMaterial = new THREE.MeshPhongMaterial({ 
+            const deskMaterial = createMaterial({ 
                 color: 0x8B4513,
                 shininess: 60
             });
@@ -715,7 +758,7 @@
 
             // 电脑屏幕
             const computerBaseGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.05);
-            const computerBaseMaterial = new THREE.MeshPhongMaterial({ 
+            const computerBaseMaterial = createMaterial({ 
                 color: 0x2C3E50,
                 shininess: 50
             });
@@ -726,7 +769,7 @@
             officeGroup.add(computerBase);
 
             const screenGeometry = new THREE.PlaneGeometry(0.5, 0.3);
-            const screenMaterial = new THREE.MeshPhongMaterial({ 
+            const screenMaterial = createMaterial({ 
                 color: 0x4ECDC4,
                 emissive: 0x4ECDC4,
                 emissiveIntensity: 0.8,
@@ -744,7 +787,7 @@
 
             // 书架
             const bookshelfGeometry = new THREE.BoxGeometry(1.5, 2, 0.4);
-            const bookshelfMaterial = new THREE.MeshPhongMaterial({ 
+            const bookshelfMaterial = createMaterial({ 
                 color: 0x8B4513,
                 shininess: 40
             });
@@ -760,7 +803,7 @@
                 const booksPerRow = 5;
                 for (let col = 0; col < booksPerRow; col++) {
                     const bookGeometry = new THREE.BoxGeometry(0.2, 0.28, 0.05);
-                    const bookMaterial = new THREE.MeshPhongMaterial({ 
+                    const bookMaterial = createMaterial({ 
                         color: bookColors[bookIndex % bookColors.length],
                         shininess: 30
                     });
@@ -779,7 +822,7 @@
 
             // 白板
             const whiteboardGeometry = new THREE.PlaneGeometry(2, 1.2);
-            const whiteboardMaterial = new THREE.MeshPhongMaterial({ 
+            const whiteboardMaterial = createMaterial({ 
                 color: 0xFFFFFF,
                 shininess: 50
             });
@@ -796,7 +839,7 @@
             studyGroup = new THREE.Group();
 
             const studyFloorGeometry = new THREE.PlaneGeometry(10, 10);
-            const studyFloorMaterial = new THREE.MeshPhongMaterial({ 
+            const studyFloorMaterial = createMaterial({ 
                 color: 0x5D4037,
                 side: THREE.DoubleSide,
                 shininess: 80,
@@ -808,7 +851,7 @@
             studyFloor.receiveShadow = true;
             studyGroup.add(studyFloor);
 
-            const studyWallMaterial = new THREE.MeshPhongMaterial({ color: 0xF5E6D3 });
+            const studyWallMaterial = createMaterial({ color: 0xF5E6D3 });
             const backWallGeometry = new THREE.PlaneGeometry(10, 6);
             const studyBackWall = new THREE.Mesh(backWallGeometry, studyWallMaterial);
             studyBackWall.position.set(0, 2, -2);
@@ -822,7 +865,7 @@
 
             // 书柜
             const wallBookshelfGeometry = new THREE.BoxGeometry(0.5, 5, 8);
-            const wallBookshelfMaterial = new THREE.MeshPhongMaterial({ 
+            const wallBookshelfMaterial = createMaterial({ 
                 color: 0x6D4C41,
                 shininess: 40
             });
@@ -840,7 +883,7 @@
                     const bookH = 0.35 + Math.random() * 0.1;
                     const bookD = 0.25;
                     const bookGeometry = new THREE.BoxGeometry(bookW, bookH, bookD);
-                    const bookMaterial = new THREE.MeshPhongMaterial({ 
+                    const bookMaterial = createMaterial({ 
                         color: studyBookColors[Math.floor(Math.random() * studyBookColors.length)],
                         shininess: 30
                     });
@@ -859,7 +902,7 @@
 
             // 书桌
             const studyDeskTopGeometry = new THREE.BoxGeometry(2.5, 0.1, 1.3);
-            const studyDeskMaterial = new THREE.MeshPhongMaterial({ 
+            const studyDeskMaterial = createMaterial({ 
                 color: 0x8B4513,
                 shininess: 60
             });
@@ -882,7 +925,7 @@
 
             // 书
             const openBookGeometry = new THREE.BoxGeometry(0.4, 0.03, 0.3);
-            const openBookMaterial = new THREE.MeshPhongMaterial({ 
+            const openBookMaterial = createMaterial({ 
                 color: 0xFFF8E7,
                 shininess: 30
             });
@@ -894,7 +937,7 @@
 
             // 笔记本电脑
             const laptopBaseGeometry = new THREE.BoxGeometry(0.5, 0.03, 0.35);
-            const laptopMaterial = new THREE.MeshPhongMaterial({ 
+            const laptopMaterial = createMaterial({ 
                 color: 0x2C3E50,
                 shininess: 80
             });
@@ -904,7 +947,7 @@
             studyGroup.add(laptopBase);
 
             const laptopScreenGeometry = new THREE.PlaneGeometry(0.45, 0.28);
-            const laptopScreenMaterial = new THREE.MeshPhongMaterial({ 
+            const laptopScreenMaterial = createMaterial({ 
                 color: 0x1A5276,
                 emissive: 0x1A5276,
                 emissiveIntensity: 0.5,
@@ -918,7 +961,7 @@
 
             // 台灯
             const lampBaseGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.1, 32);
-            const lampMaterial = new THREE.MeshPhongMaterial({ 
+            const lampMaterial = createMaterial({ 
                 color: 0xFFD700,
                 shininess: 100
             });
@@ -933,7 +976,7 @@
             studyGroup.add(lampPole);
 
             const lampShadeGeometry = new THREE.ConeGeometry(0.25, 0.3, 32, 1, true);
-            const lampShadeMaterial = new THREE.MeshPhongMaterial({ 
+            const lampShadeMaterial = createMaterial({ 
                 color: 0xFFA500,
                 shininess: 50,
                 transparent: true,
@@ -946,7 +989,7 @@
             studyGroup.add(lampShade);
 
             const lampBulbGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-            const lampBulbMaterial = new THREE.MeshPhongMaterial({ 
+            const lampBulbMaterial = createMaterial({ 
                 color: 0xFFFFA0,
                 emissive: 0xFFFFA0,
                 emissiveIntensity: 1
@@ -963,7 +1006,7 @@
 
             // 椅子
             const chairSeatGeometry = new THREE.BoxGeometry(0.6, 0.1, 0.5);
-            const chairMaterial = new THREE.MeshPhongMaterial({ 
+            const chairMaterial = createMaterial({ 
                 color: 0x2C3E50,
                 shininess: 50
             });
@@ -993,7 +1036,7 @@
 
             // 窗户
             const windowGeometry = new THREE.PlaneGeometry(2, 1.5);
-            const windowMaterial = new THREE.MeshPhongMaterial({ 
+            const windowMaterial = createMaterial({ 
                 color: 0x87CEEB,
                 emissive: 0x87CEEB,
                 emissiveIntensity: 0.3,
@@ -1006,7 +1049,7 @@
             studyGroup.add(windowPane);
 
             const curtainGeometry = new THREE.PlaneGeometry(0.8, 2);
-            const curtainMaterial = new THREE.MeshPhongMaterial({ 
+            const curtainMaterial = createMaterial({ 
                 color: 0x8B4513,
                 shininess: 30,
                 side: THREE.DoubleSide
@@ -1029,7 +1072,7 @@
             bedroomGroup = new THREE.Group();
 
             const bedroomFloorGeometry = new THREE.PlaneGeometry(10, 10);
-            const bedroomFloorMaterial = new THREE.MeshPhongMaterial({ 
+            const bedroomFloorMaterial = createMaterial({ 
                 color: 0x6D4C41,
                 side: THREE.DoubleSide,
                 shininess: 60,
@@ -1041,7 +1084,7 @@
             bedroomFloor.receiveShadow = true;
             bedroomGroup.add(bedroomFloor);
 
-            const bedroomWallMaterial = new THREE.MeshPhongMaterial({ color: 0xC5DDE8 });
+            const bedroomWallMaterial = createMaterial({ color: 0xC5DDE8 });
             const backWallGeometry = new THREE.PlaneGeometry(10, 6);
             const bedroomBackWall = new THREE.Mesh(backWallGeometry, bedroomWallMaterial);
             bedroomBackWall.position.set(0, 2, -2);
@@ -1060,7 +1103,7 @@
 
             // 床
             const bedFrameGeometry = new THREE.BoxGeometry(4, 0.4, 5);
-            const bedFrameMaterial = new THREE.MeshPhongMaterial({ 
+            const bedFrameMaterial = createMaterial({ 
                 color: 0x5D4037,
                 shininess: 40
             });
@@ -1082,7 +1125,7 @@
             });
 
             const mattressGeometry = new THREE.BoxGeometry(3.6, 0.3, 4.6);
-            const mattressMaterial = new THREE.MeshPhongMaterial({ 
+            const mattressMaterial = createMaterial({ 
                 color: 0xF5F5DC,
                 shininess: 30
             });
@@ -1092,7 +1135,7 @@
             bedroomGroup.add(mattress);
 
             const blanketGeometry = new THREE.BoxGeometry(3.4, 0.15, 4.4);
-            const blanketMaterial = new THREE.MeshPhongMaterial({ 
+            const blanketMaterial = createMaterial({ 
                 color: 0x87CEEB,
                 shininess: 20
             });
@@ -1101,7 +1144,7 @@
             bedroomGroup.add(blanket);
 
             const pillowGeometry = new THREE.BoxGeometry(0.8, 0.2, 0.5);
-            const pillowMaterial = new THREE.MeshPhongMaterial({ 
+            const pillowMaterial = createMaterial({ 
                 color: 0xFFFFFF,
                 shininess: 25
             });
@@ -1116,7 +1159,7 @@
             bedroomGroup.add(pillow2);
 
             const headboardGeometry = new THREE.BoxGeometry(0.3, 1.5, 4.2);
-            const headboardMaterial = new THREE.MeshPhongMaterial({ 
+            const headboardMaterial = createMaterial({ 
                 color: 0x5D4037,
                 shininess: 40
             });
@@ -1127,7 +1170,7 @@
 
             // 床头柜
             const nightstandGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.6);
-            const nightstandMaterial = new THREE.MeshPhongMaterial({ 
+            const nightstandMaterial = createMaterial({ 
                 color: 0x6D4C41,
                 shininess: 35
             });
@@ -1137,7 +1180,7 @@
             bedroomGroup.add(nightstand);
 
             const drawerGeometry = new THREE.BoxGeometry(0.7, 0.15, 0.5);
-            const drawerMaterial = new THREE.MeshPhongMaterial({ 
+            const drawerMaterial = createMaterial({ 
                 color: 0x5D4037,
                 shininess: 30
             });
@@ -1150,7 +1193,7 @@
             bedroomGroup.add(drawer2);
 
             const bedsideBookGeometry = new THREE.BoxGeometry(0.25, 0.05, 0.35);
-            const bedsideBookMaterial = new THREE.MeshPhongMaterial({ 
+            const bedsideBookMaterial = createMaterial({ 
                 color: 0x8B4513,
                 shininess: 25
             });
@@ -1161,7 +1204,7 @@
 
             // 闹钟
             const alarmClockBaseGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 32);
-            const alarmClockMaterial = new THREE.MeshPhongMaterial({ 
+            const alarmClockMaterial = createMaterial({ 
                 color: 0x2C3E50,
                 shininess: 60
             });
@@ -1176,7 +1219,7 @@
             bedroomGroup.add(alarmClockTop);
 
             const clockDisplayGeometry = new THREE.PlaneGeometry(0.12, 0.06);
-            const clockDisplayMaterial = new THREE.MeshPhongMaterial({ 
+            const clockDisplayMaterial = createMaterial({ 
                 color: 0x00FF00,
                 emissive: 0x00FF00,
                 emissiveIntensity: 0.8,
@@ -1190,7 +1233,7 @@
 
             // 床头灯
             const lampBaseGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.08, 32);
-            const lampBaseMaterial = new THREE.MeshPhongMaterial({ 
+            const lampBaseMaterial = createMaterial({ 
                 color: 0xFFD700,
                 shininess: 80
             });
@@ -1204,7 +1247,7 @@
             bedroomGroup.add(lampPole);
 
             const lampShadeGeometry = new THREE.ConeGeometry(0.2, 0.25, 32, 1, true);
-            const lampShadeMaterial = new THREE.MeshPhongMaterial({ 
+            const lampShadeMaterial = createMaterial({ 
                 color: 0xFFA500,
                 shininess: 40,
                 transparent: true,
@@ -1217,7 +1260,7 @@
             bedroomGroup.add(bedsideLamp);
 
             const bulbGeometry = new THREE.SphereGeometry(0.06, 16, 16);
-            const bulbMaterial = new THREE.MeshPhongMaterial({ 
+            const bulbMaterial = createMaterial({ 
                 color: 0xFFFFA0,
                 emissive: 0xFFFFA0,
                 emissiveIntensity: 1
@@ -1232,7 +1275,7 @@
 
             // 窗户
             const bedroomWindowGeometry = new THREE.PlaneGeometry(2, 1.5);
-            const bedroomWindowMaterial = new THREE.MeshPhongMaterial({ 
+            const bedroomWindowMaterial = createMaterial({ 
                 color: 0x1a1a3e,
                 emissive: 0x1a1a3e,
                 emissiveIntensity: 0.2,
@@ -1245,7 +1288,7 @@
             bedroomGroup.add(bedroomWindow);
 
             const windowFrameGeometry = new THREE.BoxGeometry(2.2, 0.1, 0.05);
-            const windowFrameMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+            const windowFrameMaterial = createMaterial({ color: 0xFFFFFF });
             const windowTopFrame = new THREE.Mesh(windowFrameGeometry, windowFrameMaterial);
             windowTopFrame.position.set(0, 2.3, -1.93);
             bedroomGroup.add(windowTopFrame);
@@ -1261,7 +1304,7 @@
 
             // 月亮
             const moonGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-            const moonMaterial = new THREE.MeshPhongMaterial({ 
+            const moonMaterial = createMaterial({ 
                 color: 0xFFFFE0,
                 emissive: 0xFFFFE0,
                 emissiveIntensity: 0.6,
@@ -1277,7 +1320,7 @@
 
             // 窗帘
             const bedroomCurtainGeometry = new THREE.PlaneGeometry(0.9, 2.2);
-            const bedroomCurtainMaterial = new THREE.MeshPhongMaterial({ 
+            const bedroomCurtainMaterial = createMaterial({ 
                 color: 0x2C3E50,
                 shininess: 30,
                 side: THREE.DoubleSide
@@ -1292,7 +1335,7 @@
 
             // 地毯
             const rugGeometry = new THREE.PlaneGeometry(3, 2);
-            const rugMaterial = new THREE.MeshPhongMaterial({ 
+            const rugMaterial = createMaterial({ 
                 color: 0xC0392B,
                 shininess: 20
             });
@@ -1329,7 +1372,7 @@
                     geometry = new THREE.BoxGeometry(0.3, 0.4, 0.3);
                 }
                 
-                const material = new THREE.MeshPhongMaterial({ 
+                const material = createMaterial({ 
                     color: emp.color,
                     shininess: 60
                 });
