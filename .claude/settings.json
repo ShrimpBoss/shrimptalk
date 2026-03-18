@@ -1,0 +1,17 @@
+{
+  "permissionMode": "plan",
+  "model": "claude-sonnet-4-5",
+  "effort": "high",
+  "allowedTools": [
+    "Bash",
+    "Edit",
+    "Write",
+    "Read",
+    "Glob",
+    "Grep",
+    "NotebookEdit",
+    "NotebookRead"
+  ],
+  "disallowedTools": [],
+  "autoApproveTools": []
+}
