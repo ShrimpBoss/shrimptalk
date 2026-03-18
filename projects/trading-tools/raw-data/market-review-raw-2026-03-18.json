@@ -1,0 +1,156 @@
+{
+  "date": "2026-03-18",
+  "source": "xuangubao",
+  "url": "https://xuangutong.com.cn/dingpan",
+  "crawl_time": "2026-03-18 21:30",
+  "market_overview": {
+    "limit_up_count": 70,
+    "limit_down_count": 13,
+    "broken_count": 26,
+    "broken_rate": "25%",
+    "yesterday_limit_up_performance": "+1.10%",
+    "rise_fall_ratio": "3433:1658"
+  },
+  "continuous_limit_up": [
+    {
+      "name": "三房巷",
+      "code": "600370",
+      "count": 5,
+      "price": 3.63,
+      "change": "+10.00%",
+      "order_ratio": "0.14%",
+      "turnover_rate": "10.65%",
+      "market_cap": "141.4 亿",
+      "first_limit": "09:34:29",
+      "last_limit": "14:27:22",
+      "open_count": 9
+    },
+    {
+      "name": "华电辽能",
+      "code": "600396",
+      "count": 3,
+      "price": 5.17,
+      "change": "+10.00%",
+      "order_ratio": "3.08%",
+      "turnover_rate": "4.35%",
+      "market_cap": "76.1 亿",
+      "first_limit": "09:25:00",
+      "last_limit": "09:25:00",
+      "open_count": 0
+    },
+    {
+      "name": "深华发 A",
+      "code": "000020",
+      "count": 3,
+      "price": 19.28,
+      "change": "+9.98%",
+      "order_ratio": "15.45%",
+      "turnover_rate": "1.60%",
+      "market_cap": "34.9 亿",
+      "first_limit": "09:25:00",
+      "last_limit": "09:25:00",
+      "open_count": 0
+    },
+    {
+      "name": "顺灏股份",
+      "code": "002565",
+      "count": 2,
+      "price": 16.21,
+      "change": "+9.97%",
+      "order_ratio": "1.36%",
+      "turnover_rate": "24.78%",
+      "market_cap": "171.8 亿",
+      "first_limit": "10:43:06",
+      "last_limit": "11:11:30",
+      "open_count": 1
+    },
+    {
+      "name": "酒钢宏兴",
+      "code": "600307",
+      "count": 2,
+      "price": 2.42,
+      "change": "+10.00%",
+      "order_ratio": "0.52%",
+      "turnover_rate": "9.50%",
+      "market_cap": "151.6 亿",
+      "first_limit": "09:41:52",
+      "last_limit": "10:04:22",
+      "open_count": 3
+    },
+    {
+      "name": "雅博股份",
+      "code": "002323",
+      "count": 2,
+      "price": 3.03,
+      "change": "+10.18%",
+      "order_ratio": "2.42%",
+      "turnover_rate": "5.39%",
+      "market_cap": "64.2 亿",
+      "first_limit": "09:25:00",
+      "last_limit": "09:25:00",
+      "open_count": 0
+    },
+    {
+      "name": "基蛋生物",
+      "code": "603387",
+      "count": 2,
+      "price": 10.38,
+      "change": "+9.96%",
+      "order_ratio": "1.54%",
+      "turnover_rate": "6.60%",
+      "market_cap": "52.6 亿",
+      "first_limit": "09:30:47",
+      "last_limit": "09:32:09",
+      "open_count": 1
+    }
+  ],
+  "first_limit_up_sample": [
+    {
+      "name": "朗科科技",
+      "code": "300042",
+      "price": 61.08,
+      "change": "+20.00%",
+      "order_ratio": "1.07%",
+      "turnover_rate": "25.49%",
+      "market_cap": "122.4 亿",
+      "first_limit": "14:55:12",
+      "last_limit": "14:55:12",
+      "open_count": 0,
+      "reason": "存储芯片"
+    },
+    {
+      "name": "菲菱科思",
+      "code": "301191",
+      "price": 127.94,
+      "change": "+20.00%",
+      "order_ratio": "1.23%",
+      "turnover_rate": "13.60%",
+      "market_cap": "66.8 亿",
+      "first_limit": "14:55:06",
+      "last_limit": "14:55:06",
+      "open_count": 0,
+      "reason": "交换机"
+    },
+    {
+      "name": "长城科技",
+      "code": "603897",
+      "price": 33.14,
+      "change": "+9.99%",
+      "order_ratio": "0.31%",
+      "turnover_rate": "9.31%",
+      "market_cap": "68.4 亿",
+      "first_limit": "09:31:07",
+      "last_limit": "09:38:13",
+      "open_count": 5,
+      "reason": "电磁线"
+    }
+  ],
+  "verification": {
+    "status": "verified",
+    "notes": [
+      "长城科技正确识别为首板（开板 5 次，但连板字段为'首板'）",
+      "连板数直接从'连板'列读取，不做人工推断",
+      "原始数据已保存备查"
+    ]
+  }
+}
