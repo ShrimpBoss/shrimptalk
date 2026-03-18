@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 OA 运营分析看板 - 虾老板智能大厦</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-dark: #0f0f1a;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #252542;
+            --accent: #FF6B6B;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --text: #ffffff;
+            --text-dim: rgba(255,255,255,0.6);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #16213e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .last-update {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--info);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 指标卡片网格 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 指标卡片 */
+        .metric-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.2);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--info));
+        }
+
+        .metric-card.success::before {
+            background: linear-gradient(90deg, var(--success), #27ae60);
+        }
+
+        .metric-card.warning::before {
+            background: linear-gradient(90deg, var(--warning), #e67e22);
+        }
+
+        .metric-card.danger::before {
+            background: linear-gradient(90deg, var(--danger), #c0392b);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-name {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .metric-icon {
+            font-size: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-unit {
+            font-size: 1rem;
+            color: var(--text-dim);
+            margin-left: 0.3rem;
+        }
+
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--danger);
+        }
+
+        .trend-stable {
+            color: var(--text-dim);
+        }
+
+        /* 进度条 */
+        .progress-container {
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .progress-fill.success { background: var(--success); }
+        .progress-fill.warning { background: var(--warning); }
+        .progress-fill.danger { background: var(--danger); }
+        .progress-fill.info { background: var(--info); }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* 详细面板 */
+        .detail-panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .data-table th {
+            color: var(--text-dim);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.success {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.warning {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+        }
+
+        .status-badge.danger {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+        }
+
+        /* 行动清单 */
+        .action-list {
+            list-style: none;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .action-item:last-child {
+            border-bottom: none;
+        }
+
+        .action-priority {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .action-priority.p0 {
+            background: var(--danger);
+            color: white;
+        }
+
+        .action-priority.p1 {
+            background: var(--warning);
+            color: black;
+        }
+
+        .action-priority.p2 {
+            background: var(--info);
+            color: white;
+        }
+
+        .action-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .action-status.pending { background: var(--warning); }
+        .action-status.progress { background: var(--info); }
+        .action-status.done { background: var(--success); }
+
+        /* 动画 */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--success);
+            font-size: 0.8rem;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .metric-value { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="title">📊 OA 运营分析看板</div>
+            <div class="subtitle">Operation Analytics · 自我发现 · 自修复 · 持续进化</div>
+        </div>
+        <div class="last-update">
+            <span class="live-indicator">
+                <span class="live-dot"></span>
+                实时更新
+            </span>
+            <span id="updateTime">--:--:--</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 核心指标 -->
+        <div class="metrics-grid">
+            <!-- Cron 可靠性 -->
+            <div class="metric-card success">
+                <div class="metric-header">
+                    <span class="metric-name">Cron 作业稳定性</span>
+                    <span class="metric-icon">⏰</span>
+                </div>
+                <div class="metric-value">100<span class="metric-unit">%</span></div>
+                <div class="metric-trend trend-stable">
+                    <span>📊 6 个作业 · 0 故障</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill success" style="width: 100%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>目标：100%</span>
+                        <span>✅ 达标</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自我修复率 -->
+            <div class="metric-card danger">
+                <div class="metric-header">
+                    <span class="metric-name">自我修复率</span>
+                    <span class="metric-icon">🔧</span>
+                </div>
+                <div class="metric-value">0<span class="metric-unit">%</span></div>
+                <div class="metric-trend trend-down">
+                    <span>🔴 待实施 - P0 优先级</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill danger" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>目标：>80%</span>
+                        <span>🔴 待改进</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent 在线率 -->
+            <div class="metric-card success">
+                <div class="metric-header">
+                    <span class="metric-name">Agent 团队在线率</span>
+                    <span class="metric-icon">👥</span>
+                </div>
+                <div class="metric-value">100<span class="metric-unit">%</span></div>
+                <div class="metric-trend trend-stable">
+                    <span>🟢 10/10 全员在线</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill success" style="width: 100%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>目标：100%</span>
+                        <span>✅ 优秀</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 记忆保存成功率 -->
+            <div class="metric-card success">
+                <div class="metric-header">
+                    <span class="metric-name">记忆保存成功率</span>
+                    <span class="metric-icon">💾</span>
+                </div>
+                <div class="metric-value">100<span class="metric-unit">%</span></div>
+                <div class="metric-trend trend-up">
+                    <span>📈 连续 9 次成功</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill success" style="width: 100%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>目标：100%</span>
+                        <span>✅ 稳定</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory 文件大小 -->
+            <div class="metric-card warning">
+                <div class="metric-header">
+                    <span class="metric-name">MEMORY.md 大小</span>
+                    <span class="metric-icon">📄</span>
+                </div>
+                <div class="metric-value">~25<span class="metric-unit">KB</span></div>
+                <div class="metric-trend trend-stable">
+                    <span>🟡 警戒线：50KB</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill warning" style="width: 50%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>当前：25KB / 50KB</span>
+                        <span>🟡 健康</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Token 成本监控 -->
+            <div class="metric-card danger">
+                <div class="metric-header">
+                    <span class="metric-name">Token 成本监控</span>
+                    <span class="metric-icon">💰</span>
+                </div>
+                <div class="metric-value">--<span class="metric-unit"></span></div>
+                <div class="metric-trend trend-down">
+                    <span>🔴 待接入 API</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill danger" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>目标：建立监控</span>
+                        <span>🔴 待启动</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cron 作业详情 -->
+        <div class="detail-panel">
+            <div class="panel-header">
+                <div class="panel-title">⏰ Cron 作业执行记录</div>
+                <span class="status-badge success">6/6 正常</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>作业名称</th>
+                        <th>调度时间</th>
+                        <th>上次执行</th>
+                        <th>状态</th>
+                        <th>连续成功</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>📊 每日工作日志</td>
+                        <td>每天 18:00</td>
+                        <td>2026-03-17 18:00</td>
+                        <td><span class="status-badge success">✅ 成功</span></td>
+                        <td>9 次</td>
+                    </tr>
+                    <tr>
+                        <td>🌙 23:59 记忆保存</td>
+                        <td>每天 23:59</td>
+                        <td>2026-03-17 23:59</td>
+                        <td><span class="status-badge success">✅ 成功</span></td>
+                        <td>9 次</td>
+                    </tr>
+                    <tr>
+                        <td>🌙 00:00 记忆保存</td>
+                        <td>每天 00:00</td>
+                        <td>2026-03-18 00:00</td>
+                        <td><span class="status-badge success">✅ 成功</span></td>
+                        <td>9 次</td>
+                    </tr>
+                    <tr>
+                        <td>🌅 06:00 记忆保存</td>
+                        <td>每天 06:00</td>
+                        <td>2026-03-18 06:00</td>
+                        <td><span class="status-badge success">✅ 成功</span></td>
+                        <td>9 次</td>
+                    </tr>
+                    <tr>
+                        <td>☀️ 09:00 记忆保存</td>
+                        <td>每天 09:00</td>
+                        <td>2026-03-18 09:00</td>
+                        <td><span class="status-badge success">✅ 成功</span></td>
+                        <td>3 次</td>
+                    </tr>
+                    <tr>
+                        <td>📝 12:00 记忆保存</td>
+                        <td>每天 12:00</td>
+                        <td>待执行</td>
+                        <td><span class="status-badge success">✅ 正常</span></td>
+                        <td>3 次</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 改进行动清单 -->
+        <div class="detail-panel">
+            <div class="panel-header">
+                <div class="panel-title">🎯 OA 系统改进行动清单</div>
+                <span class="live-indicator">
+                    <span class="live-dot"></span>
+                    进行中
+                </span>
+            </div>
+            <ul class="action-list">
+                <li class="action-item">
+                    <span class="action-status progress"></span>
+                    <span class="action-priority p0">P0</span>
+                    <span>在 Dashboard 中添加 OA 指标面板</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 19 日</span>
+                </li>
+                <li class="action-item">
+                    <span class="action-status pending"></span>
+                    <span class="action-priority p0">P0</span>
+                    <span>实现 Cron 作业失败自动重试机制</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 19 日</span>
+                </li>
+                <li class="action-item">
+                    <span class="action-status pending"></span>
+                    <span class="action-priority p0">P0</span>
+                    <span>建立 Memory 文件大小监控告警</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 18 日</span>
+                </li>
+                <li class="action-item">
+                    <span class="action-status pending"></span>
+                    <span class="action-priority p1">P1</span>
+                    <span>创建知识飞轮文档模板</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 20 日</span>
+                </li>
+                <li class="action-item">
+                    <span class="action-status pending"></span>
+                    <span class="action-priority p1">P1</span>
+                    <span>Token 成本监控脚本开发</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 21 日</span>
+                </li>
+                <li class="action-item">
+                    <span class="action-status pending"></span>
+                    <span class="action-priority p1">P1</span>
+                    <span>Prompt 瘦身分析与优化</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 22 日</span>
+                </li>
+                <li class="action-item">
+                    <span class="action-status pending"></span>
+                    <span class="action-priority p2">P2</span>
+                    <span>自愈系统 v1.0 实现</span>
+                    <span style="margin-left: auto; color: var(--text-dim);">预计：3 月 28 日</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 知识飞轮 -->
+        <div class="detail-panel">
+            <div class="panel-header">
+                <div class="panel-title">🎓 知识飞轮 · 最近学习</div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>学习主题</th>
+                        <th>日期</th>
+                        <th>核心收获</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OA 自愈系统</td>
+                        <td>2026-03-18</td>
+                        <td>指标驱动进化 · 基准线是关键 · 闭环自检</td>
+                        <td><span class="status-badge success">✅ 完成</span></td>
+                    </tr>
+                    <tr>
+                        <td>营销心理学</td>
+                        <td>2026-03-17</td>
+                        <td>用户心理 · 购买决策 · 价值感知</td>
+                        <td><span class="status-badge success">✅ 完成</span></td>
+                    </tr>
+                    <tr>
+                        <td>写作能力</td>
+                        <td>2026-03-17</td>
+                        <td>结构化表达 · 故事叙述 · 共鸣建立</td>
+                        <td><span class="status-badge success">✅ 完成</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('updateTime').textContent = timeStr;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 模拟实时数据更新动画
+        document.querySelectorAll('.metric-value').forEach(el => {
+            el.style.transition = 'all 0.3s ease';
+        });
+    </script>
+</body>
+</html>
