@@ -213,8 +213,8 @@ def generate_summary(zt_df, break_df, yesterday_df, date=None):
         for idx, (industry, count) in enumerate(industry_df.head(10).iterrows()):
             reps = zt_df[zt_df['所属行业'] == industry]['名称'].head(3).tolist()
             rep_str = '、'.join(reps)
-            ratio = count / len(zt_df) * 100 if len(zt_df) > 0 else 0
-            md += f"| {industry} | {count} | {ratio:.1f}% | {rep_str} |\n"
+            ratio = count['涨停家数'] / len(zt_df) * 100 if len(zt_df) > 0 else 0
+            md += f"| {industry} | {count['涨停家数']} | {ratio:.1f}% | {rep_str} |\n"
     else:
         md += "无行业分布数据\n"
     
