@@ -27,3 +27,4 @@ goals:
     unit: '%'
     healthy: 80
     warning: 50
+    pipeline: pipelines/memory_discipline.py
