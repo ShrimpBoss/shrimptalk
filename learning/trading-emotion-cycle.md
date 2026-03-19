@@ -86,4 +86,8 @@
 
 ---
 
+**深度学习笔记**: → [trading-emotion-cycle-deep.md](trading-emotion-cycle-deep.md)  
+**涨停板战法**: → [trading-zhangting-tactics.md](trading-zhangting-tactics.md)  
+**游资操盘手法**: → [trading-youzi-methods.md](trading-youzi-methods.md)  
+
 **持续更新中...** 🦐
