@@ -34,10 +34,14 @@ from pathlib import Path
 OUTPUT_DIR = Path("/home/terrence/.openclaw/workspace/data/emotion")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# 通义千问 VL API 配置
-API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")  # 需要配置
-API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
-MODEL = "qwen-vl-max"  # 通义千问 VL 最强模型
+# 通义千问 VL API 配置（OpenAI 兼容接口）
+# 获取方式：阿里云 DashScope 控制台 → API-KEY 管理
+# 文档：https://help.aliyun.com/document_detail/2712576.html
+# 宝哥的新 API Key（2026-03-19）
+API_KEY = os.environ.get("DASHSCOPE_API_KEY", "sk-561f772674114910bbf9702d77c8cae1")
+API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+MODEL = "qwen-vl-plus"  # 通义千问 VL，100 万 Token 免费额度（90 天）
+# MODEL = "qwen3-vl-plus"  # 最新版，也可用
 
 # ==================== 工具函数 ====================
 
@@ -46,8 +50,11 @@ def image_to_base64(image_path: str) -> str:
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
-def call_qwen_vl(image_path: str, prompt: str) -> dict:
-    """调用通义千问 VL API 识别图片"""
+def call_qwen_vl(image_path: str, prompt: str, timeout: int = 120) -> dict:
+    """
+    调用通义千问 VL API 识别图片（OpenAI 兼容接口）
+    文档：https://help.aliyun.com/document_detail/2712576.html
+    """
     if not API_KEY:
         raise ValueError("请设置 DASHSCOPE_API_KEY 环境变量")
     
@@ -58,25 +65,28 @@ def call_qwen_vl(image_path: str, prompt: str) -> dict:
         "Content-Type": "application/json"
     }
     
+    # OpenAI 兼容格式
     payload = {
         "model": MODEL,
-        "input": {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"image": f"data:image/png;base64,{image_base64}"},
-                        {"text": prompt}
-                    ]
-                }
-            ]
-        },
-        "parameters": {
-            "response_format": "json"  # 强制 JSON 输出
-        }
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{image_base64}"}
+                    },
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            }
+        ],
+        "response_format": {"type": "json_object"}  # 强制 JSON 输出
     }
     
-    response = requests.post(API_URL, headers=headers, json=payload, timeout=60)
+    response = requests.post(API_URL, headers=headers, json=payload, timeout=timeout)
     response.raise_for_status()
     
     result = response.json()
@@ -209,10 +219,10 @@ def process_image(image_path: str, table_type: str = "limit_up"):
     else:
         result = recognize_broken_table(image_path)
     
-    # 解析结果
+    # 解析结果（OpenAI 兼容格式）
     try:
         # 从 API 响应中提取 JSON
-        content = result["output"]["choices"][0]["message"]["content"]
+        content = result["choices"][0]["message"]["content"]
         # 尝试解析 JSON
         if "```json" in content:
             json_str = content.split("```json")[1].split("```")[0]

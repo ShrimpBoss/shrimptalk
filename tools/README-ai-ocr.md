@@ -16,7 +16,7 @@ pip install dashscope pandas openpyxl
 
 ### 方案 1：环境变量（推荐）
 ```bash
-export DASHSCOPE_API_KEY="your-api-key-here"
+export DASHSCOPE_API_KEY="sk-xxxxxxxxxxxxxx"
 ```
 
 ### 方案 2：在代码中配置
@@ -25,11 +25,22 @@ export DASHSCOPE_API_KEY="your-api-key-here"
 API_KEY = "sk-xxxxxxxxxxxxxx"  # 你的通义千问 API key
 ```
 
-### 获取 API Key
+### 获取 API Key（OpenAI 兼容接口）
 1. 访问 https://dashscope.console.aliyun.com/
-2. 注册/登录阿里云账号
-3. 创建 API Key
-4. 新用户有免费额度（够用！）
+2. 登录阿里云账号
+3. 左侧菜单 → **API-KEY 管理**
+4. 点 **创建新的 API-KEY**
+5. 复制 key（格式：`sk-xxxxxxxxxxxxxx`）
+
+### 免费额度
+- **100 万 Token**（约 1000-2000 张图片）
+- **有效期 90 天**
+- 自动抵扣，无需额外操作
+
+### 接口说明
+- **Base URL**: `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- **Model**: `qwen-vl-plus` 或 `qwen3-vl-plus`
+- **文档**: https://help.aliyun.com/document_detail/2712576.html
 
 ---
 
