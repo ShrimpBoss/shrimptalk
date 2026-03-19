@@ -1,0 +1,242 @@
+2025-11-06
+一字:8个 | 封单:48.5亿
+<table>
+<thead>
+<tr>
+<th>
+摩恩电气 <span style="font-weight:normal;">变压器 3板</span>
+<br>144.6亿 | 19.7亿 | 20.5亿
+</th>
+<th>
+海陆重工 <span style="font-weight:normal;">钍基熔盐 4板</span>
+<br>24.9亿 | 8.1亿 | 9.2亿
+</th>
+<th>
+海马汽车 <span style="font-weight:normal;">海南 汽车整车</span>
+<br>2.5亿 | 4.6亿 | 5.5亿
+</th>
+<th>
+佳电股份 <span style="font-weight:normal;">核电 首板</span>
+<br>2.4亿 | 4.8亿 | 5.2亿
+</th>
+<th>
+恒大高新 <span style="font-weight:normal;">固态电池 绿色电力 2板</span>
+<br>1159万 | 2.3亿 | 3.5亿
+</th>
+<th>
+保变电气 <span style="font-weight:normal;">变压器 2板</span>
+<br>61.7亿 | 1.4亿 | 3.4亿
+</th>
+<th>
+合富中国 <span style="font-weight:normal;">医药零售 8板</span>
+<br>7623万 | 1.1亿 | 6067万
+</th>
+<th>
+新能泰山 <span style="font-weight:normal;">电气设备</span>
+<br>3.1亿 | 2058万 | 5655万
+</th>
+<th>
+神马电力 <span style="font-weight:normal;">电气设备 核电</span>
+<br>9.1亿 | 123万 | -
+</th>
+<th>
+嘉元科技 <span style="font-weight:normal;">光模块 固态电池</span>
+<br>3.9亿 | - | -
+</th>
+<th>
+博菲电气 <span style="font-weight:normal;">电气设备 核电</span>
+<br>3.4亿 | 6681万 | -
+</th>
+<th>
+闽东电力 <span style="font-weight:normal;">福建 电力 3板</span>
+<br>3.3亿 | 65万 | -
+</th>
+<th>
+太阳电缆 <span style="font-weight:normal;">电气设备 福建 2板</span>
+<br>2.8亿 | 2316万 | -
+</th>
+<th>
+厦工股份 <span style="font-weight:normal;">福建 工程机械</span>
+<br>2.3亿 | 4099万 | -
+</th>
+<th>
+实达集团 <span style="font-weight:normal;">并购重组 算力</span>
+<br>2.1亿 | - | -
+</th>
+<th>
+霍普股份 <span style="font-weight:normal;">储能</span>
+<br>2.1亿 | - | -
+</th>
+<th>
+三角防务 <span style="font-weight:normal;">燃气轮机 首板</span>
+<br>1.5亿 | - | -
+</th>
+<th>
+可立克 <span style="font-weight:normal;">变压器</span>
+<br>1.4亿 | 772万 | -
+</th>
+</tr>
+</thead>
+</table>
+---
+2025-11-05
+一字:4个 | 封单:17.9亿
+<table>
+<thead>
+<tr>
+<th>
+海陆重工 <span style="font-weight:normal;">钍基熔盐 3板</span>
+<br>47.5亿 | 7.3亿 | 8.3亿
+</th>
+<th>
+厦工股份 <span style="font-weight:normal;">福建 工程机械 2板</span>
+<br>46.5亿 | - | 4.2亿
+</th>
+<th>
+合富中国 <span style="font-weight:normal;">医药零售 7板</span>
+<br>7.3亿 | 2.3亿 | 2.7亿
+</th>
+<th>
+摩恩电气 <span style="font-weight:normal;">变压器 2板</span>
+<br>19.2亿 | 1.8亿 | 2.7亿
+</th>
+<th>
+雪人集团 <span style="font-weight:normal;">福建 体育产业 2板</span>
+<br>43.6亿 | 3661万 | -
+</th>
+<th>
+神马电力 <span style="font-weight:normal;">电气设备 核电 2板</span>
+<br>13.2亿 | - | -
+</th>
+<th>
+实达集团 <span style="font-weight:normal;">并购重组 算力 首板</span>
+<br>10.6亿 | - | -
+</th>
+<th>
+精艺股份 <span style="font-weight:normal;">金属铜 家电</span>
+<br>7.9亿 | - | -
+</th>
+<th>
+海马汽车 <span style="font-weight:normal;">海南 汽车整车 4板</span>
+<br>5.6亿 | 4232万 | -
+</th>
+<th>
+漳州发展 <span style="font-weight:normal;">福建 绿色电力 2板</span>
+<br>5亿 | - | -
+</th>
+<th>
+吉林化纤 <span style="font-weight:normal;">碳纤维</span>
+<br>4.8亿 | - | -
+</th>
+<th>
+雷迪克 <span style="font-weight:normal;">新能源汽车</span>
+<br>4.4亿 | - | -
+</th>
+<th>
+天普股份 <span style="font-weight:normal;">实控人变更 芯片 首板</span>
+<br>3.3亿 | - | -
+</th>
+<th>
+罗普斯金 <span style="font-weight:normal;">分布式光伏 金属铝 2板</span>
+<br>2.2亿 | 1880万 | -
+</th>
+<th>
+闽东电力 <span style="font-weight:normal;">福建 电力 2板</span>
+<br>2亿 | - | -
+</th>
+<th>
+吉视传媒 <span style="font-weight:normal;">短剧 3板</span>
+<br>1.9亿 | - | -
+</th>
+<th>
+振华股份 <span style="font-weight:normal;">化工 SOFC电池</span>
+<br>1.6亿 | - | -
+</th>
+<th>
+华泰股份 <span style="font-weight:normal;">化工</span>
+<br>1.1亿 | - | -
+</th>
+</tr>
+</thead>
+</table>
+---
+2025-11-04
+一字:5个 | 封单:26.5亿
+<table>
+<thead>
+<tr>
+<th>
+威高血净 <span style="font-weight:normal;">并购重组 医疗器械 2板</span>
+<br>- | 8.3亿 | 8.5亿
+</th>
+<th>
+百合花 <span style="font-weight:normal;">化工 3板</span>
+<br>15.2亿 | 5.1亿 | 5.5亿
+</th>
+<th>
+华泰股份 <span style="font-weight:normal;">化工 2板</span>
+<br>13.5亿 | 4.1亿 | 4.6亿
+</th>
+<th>
+京泉华 <span style="font-weight:normal;">变压器 储能 2板</span>
+<br>1.9亿 | 3.2亿 | 4.1亿
+</th>
+<th>
+海陆重工 <span style="font-weight:normal;">钍基熔盐 2板</span>
+<br>95.3亿 | 2.6亿 | 3.9亿
+</th>
+<th>
+棕榈股份 <span style="font-weight:normal;">旅游</span>
+<br>10.2亿 | 884万 | -
+</th>
+<th>
+粤传媒 <span style="font-weight:normal;">体育产业 短剧 4板</span>
+<br>6.1亿 | 9149万 | -
+</th>
+<th>
+宝色股份 <span style="font-weight:normal;">钍基熔盐 光热储能 2板</span>
+<br>3.9亿 | 1485万 | -
+</th>
+<th>
+强瑞技术 <span style="font-weight:normal;">液冷</span>
+<br>3.8亿 | - | -
+</th>
+<th>
+华源控股 <span style="font-weight:normal;">锂电池</span>
+<br>3.4亿 | - | -
+</th>
+<th>
+兰石重装 <span style="font-weight:normal;">钍基熔盐 3板</span>
+<br>3.3亿 | 7335万 | -
+</th>
+<th>
+东华科技 <span style="font-weight:normal;">化工</span>
+<br>1.8亿 | - | -
+</th>
+<th>
+光大嘉宝 <span style="font-weight:normal;">资产管理 首板</span>
+<br>1.7亿 | - | -
+</th>
+<th>
+三七互娱 <span style="font-weight:normal;">游戏</span>
+<br>1.3亿 | - | -
+</th>
+<th>
+美瑞新材 <span style="font-weight:normal;">化工</span>
+<br>1.2亿 | - | -
+</th>
+<th>
+中新集团 <span style="font-weight:normal;">机器人 光伏</span>
+<br>1.1亿 | - | -
+</th>
+<th>
+合富中国 <span style="font-weight:normal;">医药零售 6板</span>
+<br>9521万 | 3914万 | -
+</th>
+<th>
+百诚医药 <span style="font-weight:normal;">CRO 三季报增长</span>
+<br>7837万 | - | -
+</th>
+</tr>
+</thead>
+</table>
