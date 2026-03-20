@@ -1,0 +1,36 @@
+{
+  "futures": {
+    "原油_cls": {
+      "price": "96.14",
+      "change": "0.19",
+      "source": "财联社"
+    },
+    "黄金_cls": {
+      "price": "3.4",
+      "change": "2",
+      "source": "财联社"
+    },
+    "白银_cls": {
+      "price": "73",
+      "change": "0.43",
+      "source": "财联社"
+    },
+    "原油_jin10": {
+      "price": ".",
+      "change": null,
+      "source": "金十数据"
+    },
+    "黄金_df": {
+      "price": ".",
+      "change": null,
+      "source": "东方财富"
+    },
+    "黄金_wh": {
+      "price": ".",
+      "source": "文华财经"
+    }
+  },
+  "stocks": {},
+  "news": [],
+  "timestamp": "2026-03-20 06:51:18"
+}
